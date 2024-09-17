@@ -1,20 +1,17 @@
 // src/components/Login.js
 import React from 'react';
-import { useMsal } from "@azure/msal-react";
 
 function Login() {
-  const { instance } = useMsal();
-
   const handleLogin = () => {
-    instance.loginRedirect();
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login`;
   };
 
   return (
     <button
       onClick={handleLogin}
-      className="btn btn-primary"
+      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
     >
-      Sign in with Microsoft
+      Login with Microsoft
     </button>
   );
 }

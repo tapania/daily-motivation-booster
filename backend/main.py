@@ -18,7 +18,7 @@ import os
 from dotenv import load_dotenv
 
 # Azure OpenAI and Speech imports
-from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer, AudioOutputConfig
+from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 from openai import AzureOpenAI as OpenAIClient
 

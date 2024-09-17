@@ -36,9 +36,10 @@ def login():
     auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=REDIRECT_URI)
     return RedirectResponse(auth_url)
 
-@router.get("/token")
-def get_token(request: Request, db: Session = Depends(get_db)):
-    code = request.query_params.get('code')
+@router.post("/process_token")
+async def process_token(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    code = data.get('code')
     if not code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Authorization code not provided")
     result = msal_app.acquire_token_by_authorization_code(code, scopes=SCOPE, redirect_uri=REDIRECT_URI)
@@ -59,11 +60,9 @@ def get_token(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
     access_token = create_access_token(data={"sub": user.id})
-    response = RedirectResponse(url="/")
-    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, secure=True)
-    return response
+    return {"message": "Authentication successful", "access_token": access_token}
 
 @router.get("/logout")
 def logout(response: Response):
     response.delete_cookie(key="access_token")
-    return RedirectResponse(url="/")
+    return {"message": "Logged out successfully"}
