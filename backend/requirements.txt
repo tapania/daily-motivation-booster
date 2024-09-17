@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+sqlalchemy
+aiohttp
+python-multipart
+msal
+passlib[bcrypt]
+python-dotenv
+pytz
+azure-core
+openai
+azure-identity
+azure-cognitiveservices-speech
+azure-storage-blob
+requests
+email-validator
+jwt
