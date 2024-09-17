@@ -1,9 +1,8 @@
 // src/App.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useIsAuthenticated } from "@azure/msal-react";
+import { msalInstance } from './msalConfig';
 import Login from './components/Login';
-import AuthCallback from './components/AuthCallback';
 import PreferencesForm from './components/PreferencesForm';
 import PublicSpeeches from './components/PublicSpeeches';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -11,16 +10,29 @@ import Footer from './components/Footer';
 import API from './api';
 
 function App() {
-  const isAuthenticated = useIsAuthenticated();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const handleRedirect = async () => {
+      try {
+        await msalInstance.handleRedirectPromise();
+        const account = msalInstance.getActiveAccount();
+        if (account) {
+          setIsAuthenticated(true);
+          // You might want to call your backend here to exchange the token
+          // const response = await API.post('/process_token', { idToken: account.idToken });
+          // console.log('Authentication successful:', response.data);
+        }
+      } catch (error) {
+        console.error("Error during redirect handling:", error);
+      }
+    };
+
+    handleRedirect();
+  }, []);
 
   const handleLogout = async () => {
-    try {
-      await API.get('/logout');
-      // Redirect to home page or refresh the page to update auth state
-      window.location.href = '/';
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+    await msalInstance.logoutRedirect();
   };
 
   return (
@@ -36,7 +48,6 @@ function App() {
             </div>
 
             <Routes>
-              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/" element={
                 isAuthenticated ? (
                   <>
