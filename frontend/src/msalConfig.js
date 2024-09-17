@@ -19,4 +19,12 @@ export const loginRequest = {
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
+// Call initialize before exporting
+msalInstance.initialize().then(() => {
+  // Initialize success
+  console.log("MSAL initialized successfully");
+}).catch((error) => {
+  console.error("MSAL initialization fails", error);
+});
+
 export default msalConfig;

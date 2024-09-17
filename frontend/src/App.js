@@ -11,29 +11,51 @@ import API from './api';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    const initializeMsal = async () => {
+      await msalInstance.initialize();
+      setIsInitialized(true);
+    };
+
+    initializeMsal();
+  }, []);
 
   useEffect(() => {
     const handleRedirect = async () => {
-      try {
-        await msalInstance.handleRedirectPromise();
-        const account = msalInstance.getActiveAccount();
-        if (account) {
-          setIsAuthenticated(true);
-          // You might want to call your backend here to exchange the token
-          // const response = await API.post('/process_token', { idToken: account.idToken });
-          // console.log('Authentication successful:', response.data);
+      if (isInitialized) {
+        try {
+          const result = await msalInstance.handleRedirectPromise();
+          if (result) {
+            // User has been redirected from login
+            setIsAuthenticated(true);
+            // You might want to call your backend here to exchange the token
+            // const response = await API.post('/process_token', { idToken: result.idToken });
+            // console.log('Authentication successful:', response.data);
+          } else {
+            // Check if user is already signed in
+            const account = msalInstance.getActiveAccount();
+            if (account) {
+              setIsAuthenticated(true);
+            }
+          }
+        } catch (error) {
+          console.error("Error during redirect handling:", error);
         }
-      } catch (error) {
-        console.error("Error during redirect handling:", error);
       }
     };
 
     handleRedirect();
-  }, []);
+  }, [isInitialized]);
 
   const handleLogout = async () => {
     await msalInstance.logoutRedirect();
   };
+
+  if (!isInitialized) {
+    return <div>Initializing...</div>;
+  }
 
   return (
     <Router>
