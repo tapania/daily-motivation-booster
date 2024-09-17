@@ -8,20 +8,29 @@ function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const code = params.get('code');
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const error = urlParams.get('error');
+
+      if (error) {
+        console.error('Authentication error:', error);
+        navigate('/login');
+        return;
+      }
 
       if (code) {
         try {
-          const response = await API.post('/process_token', { code });
-          // Assuming the backend returns a success message or user data
+          const verifier = localStorage.getItem('pkce_verifier');
+          if (!verifier) {
+            throw new Error('PKCE verifier not found');
+          }
+
+          const response = await API.post('/process_token', { code, code_verifier: verifier });
           console.log('Authentication successful:', response.data);
-          // Redirect to the main page or dashboard
+          localStorage.removeItem('pkce_verifier'); // Clean up
           navigate('/');
         } catch (error) {
           console.error('Authentication error:', error);
-          // Redirect to login page or show an error message
           navigate('/login');
         }
       } else {

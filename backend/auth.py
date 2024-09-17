@@ -31,18 +31,14 @@ def get_db():
     finally:
         db.close()
 
-@router.get("/login")
-def login():
-    auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=REDIRECT_URI)
-    return RedirectResponse(auth_url)
-
 @router.post("/process_token")
 async def process_token(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
     code = data.get('code')
-    if not code:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Authorization code not provided")
-    result = msal_app.acquire_token_by_authorization_code(code, scopes=SCOPE, redirect_uri=REDIRECT_URI)
+    code_verifier = data.get('code_verifier')
+    if not code or not code_verifier:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Authorization code and code verifier are required")
+    result = msal_app.acquire_token_by_authorization_code(code, scopes=SCOPE, redirect_uri=REDIRECT_URI, code_verifier=code_verifier)
     if "error" in result:
         logging.error(f"Token acquisition error: {result.get('error_description')}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.get("error_description"))
