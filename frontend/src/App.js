@@ -6,9 +6,20 @@ import PreferencesForm from './components/PreferencesForm';
 import PublicSpeeches from './components/PublicSpeeches';
 import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
+import API from './api';  // Assuming you have an API utility for making requests
 
 function App() {
   const isAuthenticated = useIsAuthenticated();
+
+  const handleLogout = async () => {
+    try {
+      await API.get('/logout');
+      // Redirect to home page or refresh the page to update auth state
+      window.location.href = '/';
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   return (
     <ErrorBoundary>
@@ -22,7 +33,17 @@ function App() {
           </div>
 
           {isAuthenticated ? (
-            <PreferencesForm />
+            <>
+              <div className="flex justify-end mb-4">
+                <button 
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Logout
+                </button>
+              </div>
+              <PreferencesForm />
+            </>
           ) : (
             <>
               <div className="flex justify-center my-4">

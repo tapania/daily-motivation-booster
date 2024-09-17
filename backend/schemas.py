@@ -34,7 +34,7 @@ class Schedule(ScheduleBase):
 
 class UserBase(BaseModel):
     first_name: str
-    family_situation: Optional[str] = None
+    user_profile: Optional[str] = None
     timezone: str
 
 class UserCreate(UserBase):

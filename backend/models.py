@@ -1,15 +1,44 @@
 # models.py
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Time
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Time, Enum
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
+import enum
+
+class VoiceEnum(enum.Enum):
+    Ava = 'Ava'
+    Andrew = 'Andrew'
+    Emma = 'Emma'
+    Brian = 'Brian'
+    Jenny = 'Jenny'
+    Guy = 'Guy'
+    Aria = 'Aria'
+    Davis = 'Davis'
+    Jane = 'Jane'
+    Jason = 'Jason'
+    Sara = 'Sara'
+    Tony = 'Tony'
+    Nancy = 'Nancy'
+    Amber = 'Amber'
+    Ana = 'Ana'
+    Ashley = 'Ashley'
+    Brandon = 'Brandon'
+    Christopher = 'Christopher'
+    Cora = 'Cora'
+    Elizabeth = 'Elizabeth'
+    Eric = 'Eric'
+    Jacob = 'Jacob'
+    Michelle = 'Michelle'
+    Monica = 'Monica'
+    Roger = 'Roger'
+    Steffan = 'Steffan'
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     microsoft_id = Column(String, unique=True, index=True)
     first_name = Column(String)
-    family_situation = Column(String)
+    user_profile = Column(String)
     timezone = Column(String)
     email = Column(String, unique=True)
     preferences = relationship("Preference", back_populates="user", uselist=False)
@@ -22,7 +51,7 @@ class Preference(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     persona = Column(String)
     tone = Column(String)
-    voice = Column(String)
+    voice = Column(Enum(VoiceEnum))
     user = relationship("User", back_populates="preferences")
 
 class Schedule(Base):

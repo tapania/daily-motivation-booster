@@ -8,7 +8,7 @@ import { handleError } from '../utils/errorHandler';
 
 function PreferencesForm() {
   const [firstName, setFirstName] = useState('');
-  const [familySituation, setFamilySituation] = useState('');
+  const [userProfile, setUserProfile] = useState('');
   const [timezone, setTimezone] = useState('UTC');
   const [selectedPersona, setSelectedPersona] = useState('');
   const [selectedVoice, setSelectedVoice] = useState('');
@@ -47,10 +47,10 @@ function PreferencesForm() {
         />
         <input
           type="text"
-          placeholder="Family Situation"
+          placeholder="User Profile"
           className="input input-bordered w-full"
-          value={familySituation}
-          onChange={e => setFamilySituation(e.target.value)}
+          value={userProfile}
+          onChange={e => setUserProfile(e.target.value)}
         />
         <input
           type="text"

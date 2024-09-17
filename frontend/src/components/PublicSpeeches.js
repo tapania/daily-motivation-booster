@@ -9,7 +9,7 @@ function PublicSpeeches() {
   const [speechUrl, setSpeechUrl] = useState(null);
   const [formData, setFormData] = useState({
     first_name: '',
-    family_situation: '',
+    user_profile: '',
     persona: '',
     tone: '',
     voice: '',
@@ -67,10 +67,10 @@ function PublicSpeeches() {
           />
           <input
             type="text"
-            placeholder="Family Situation"
+            placeholder="User Profile"
             className="input input-bordered w-full"
-            value={formData.family_situation}
-            onChange={e => setFormData({ ...formData, family_situation: e.target.value })}
+            value={formData.user_profile}
+            onChange={e => setFormData({ ...formData, user_profile: e.target.value })}
           />
           <input
             type="text"

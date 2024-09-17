@@ -1,6 +1,6 @@
 # auth.py
 import msal
-from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi import APIRouter, Request, Depends, HTTPException, status, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal
@@ -62,3 +62,8 @@ def get_token(request: Request, db: Session = Depends(get_db)):
     response = RedirectResponse(url="/")
     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True, secure=True)
     return response
+
+@router.get("/logout")
+def logout(response: Response):
+    response.delete_cookie(key="access_token")
+    return RedirectResponse(url="/")

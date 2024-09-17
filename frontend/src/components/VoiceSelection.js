@@ -8,7 +8,7 @@ function VoiceSelection({ selectedVoice, setSelectedVoice }) {
 
   useEffect(() => {
     API.get('/voices/')
-      .then(response => setVoices(response.data))
+      .then(response => setVoices(response.data.voices))
       .catch(error => handleError(error));
   }, []);
 
@@ -20,8 +20,8 @@ function VoiceSelection({ selectedVoice, setSelectedVoice }) {
     >
       <option value="">Select a Voice</option>
       {voices.map(voice => (
-        <option key={voice.shortName} value={voice.shortName}>
-          {voice.localName} - {voice.gender} ({voice.localeName})
+        <option key={voice} value={voice}>
+          {voice}
         </option>
       ))}
     </select>

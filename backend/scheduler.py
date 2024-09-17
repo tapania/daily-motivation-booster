@@ -31,11 +31,16 @@ SAS_URL = os.getenv('AZURE_BLOB_SAS_URL')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def generate_prompt(user, preferences):
-    prompt = f"Create a {preferences.tone} motivational speech for {user.first_name}"
-    if user.family_situation:
-        prompt += f", who is {user.family_situation}"
-    prompt += f", in the style of {preferences.persona}."
-    return prompt
+    system_prompt = f"You are speaking to {user.first_name}"
+    if user.user_profile:
+        system_prompt += f", whose motivational profile is:\n{user.user_profile}\n"
+    system_prompt += f"\nYou are motivational coach with following profile:\n{preferences.persona}:{preferences.tone}\n."
+    prompt = f"\nPlease write a motivational speech for {user.first_name} in the {preferences.persona} style and focus on using the correct triggers from {user.first_name}'s profile to target the speech for just him/her."
+
+    return [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ]
 
 async def generate_speech(user, preferences):
     try:
@@ -46,9 +51,11 @@ async def generate_speech(user, preferences):
             azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
         )
 
-        prompt = generate_prompt(user, preferences)
-        response = client.completions.create(engine="davinci", prompt=prompt, max_tokens=150)
-        speech_text = response.choices[0].text.strip()
+        response = client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+            messages=generate_prompt(user, preferences)
+        )
+        speech_text = response.choices[0].message.content
 
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)

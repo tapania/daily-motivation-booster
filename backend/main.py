@@ -1,8 +1,9 @@
-# main.py
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from azure_storage import upload_file_to_blob, list_blobs
+from typing import Optional, List
+import datetime
 
 from sqlalchemy.orm import Session
 from models import User, Preference, Schedule
@@ -15,6 +16,26 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from dotenv import load_dotenv
+
+# Azure OpenAI and Speech imports
+from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer, AudioOutputConfig
+from azure.cognitiveservices.speech.audio import AudioOutputConfig
+from openai import AzureOpenAI as OpenAIClient
+
+import re
+
+def sanitize_filename(filename: str, max_length: int = 32) -> str:
+    # Remove non-ASCII characters
+    filename = filename.encode('ascii', 'ignore').decode('ascii')
+    
+    # Convert to lowercase
+    filename = filename.lower()
+    
+    # Remove any character that isn't alphanumeric, underscore, or hyphen
+    filename = re.sub(r'[^\w\-]', '', filename)
+    
+    # Strip leading/trailing whitespace and truncate to max_length
+    return filename.strip()[:max_length]
 
 load_dotenv()
 
@@ -30,7 +51,7 @@ app = FastAPI()
 
 app.include_router(auth_router)
 
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS').split(',')
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +60,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Environment variables
+SPEECH_KEY = os.getenv('SPEECH_KEY')
+SPEECH_REGION = os.getenv('SPEECH_REGION')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 def get_current_user(token: str = Depends(lambda request: request.cookies.get('access_token'))):
     if not token:
@@ -60,9 +86,8 @@ def update_preferences(preferences: PreferenceCreate, db: Session = Depends(get_
     try:
         db_pref = db.query(Preference).filter(Preference.user_id == user.id).first()
         if db_pref:
-            db_pref.persona = preferences.persona
-            db_pref.tone = preferences.tone
-            db_pref.voice = preferences.voice
+            for key, value in preferences.dict().items():
+                setattr(db_pref, key, value)
         else:
             db_pref = Preference(user_id=user.id, **preferences.dict())
             db.add(db_pref)
@@ -75,23 +100,17 @@ def update_preferences(preferences: PreferenceCreate, db: Session = Depends(get_
 
 @app.get("/voices/")
 def get_voices():
-    try:
-        import requests
-        SPEECH_KEY = os.getenv('SPEECH_KEY')
-        SPEECH_REGION = os.getenv('SPEECH_REGION')
-
-        url = f"https://{SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/voices/list"
-        headers = {"Ocp-Apim-Subscription-Key": SPEECH_KEY}
-
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        logging.error(f"Error fetching voices: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch voices")
+    voices = [
+        'Ava', 'Andrew', 'Emma', 'Brian', 'Jenny', 'Guy', 'Aria', 'Davis', 
+        'Jane', 'Jason', 'Sara', 'Tony', 'Nancy', 'Amber', 'Ana', 'Ashley', 
+        'Brandon', 'Christopher', 'Cora', 'Elizabeth', 'Eric', 'Jacob', 
+        'Michelle', 'Monica', 'Roger', 'Steffan'
+    ]
+    
+    return JSONResponse(content={"voices": voices})
 
 @app.post("/schedule/")
-def set_schedule(schedules: list[ScheduleCreate], db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def set_schedule(schedules: List[ScheduleCreate], db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     try:
         db.query(Schedule).filter(Schedule.user_id == user.id).delete()
         for schedule in schedules:
@@ -103,10 +122,9 @@ def set_schedule(schedules: list[ScheduleCreate], db: Session = Depends(get_db),
         logging.error(f"Error updating schedule: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
 
-
 class SpeechRequest(BaseModel):
     first_name: str
-    family_situation: Optional[str] = None
+    user_profile: Optional[str] = None
     persona: str
     tone: str
     voice: str
@@ -115,20 +133,33 @@ class SpeechRequest(BaseModel):
 async def generate_speech_endpoint(speech_request: SpeechRequest):
     try:
         # Generate speech text
-        prompt = f"Create a {speech_request.tone} motivational speech for {speech_request.first_name}"
-        if speech_request.family_situation:
-            prompt += f", who is {speech_request.family_situation}"
-        prompt += f", in the style of {speech_request.persona}."
+        system_prompt = f"You are speaking to {speech_request.first_name}"
+        if speech_request.user_profile:
+            system_prompt += f", whose motivational profile is:\n{speech_request.user_profile}\n"
+        system_prompt += f"\nYou are motivational coach with following profile:\n{speech_request.persona}:{speech_request.tone}\n."
+        prompt = f"\nPlease write a motivational speech for {speech_request.first_name} in the {speech_request.persona} style and focus on using the correct triggers from {speech_request.first_name}'s profile to target the speech for just him/her."
+
 
         # Use Azure OpenAI to generate speech text
-        client = OpenAIClient(OPENAI_API_KEY)
-        response = client.completions.create(engine="davinci", prompt=prompt, max_tokens=150)
-        speech_text = response.choices[0].text.strip()
+        client = AzureOpenAI(
+            api_key = os.getenv("AZURE_OPENAI_API_KEY"),
+            api_version = "2024-02-15-preview",
+            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        )
+        
+        response = client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        speech_text = response.choices[0].message.content
 
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
         speech_config.speech_synthesis_voice_name = speech_request.voice
-        filename = f"speech_{datetime.datetime.now().isoformat()}.wav"
+        filename = f"speech_{sanitize_filename(speech_request.first_name)}_{datetime.datetime.now().isoformat()}.wav"
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
