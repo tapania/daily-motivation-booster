@@ -3,7 +3,7 @@ import msal
 from fastapi import APIRouter, Request, Depends, HTTPException, status, Response
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
-from database import SessionLocal
+from database import SessionLocal, get_db
 from models import User
 from utils import create_access_token, verify_token
 from dotenv import load_dotenv
@@ -27,13 +27,6 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')  # Default to 
 msal_app = msal.ConfidentialClientApplication(
     CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
 )
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/login")
 def login():

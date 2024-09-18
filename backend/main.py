@@ -24,7 +24,7 @@ from schemas import (
     SpeechRequest,
     ScheduleSchema
 )
-from database import SessionLocal, engine, Base
+from database import SessionLocal, engine, Base, get_db
 from auth import router as auth_router
 from utils import verify_token, create_access_token
 from azure_storage import upload_file_to_blob
@@ -74,13 +74,6 @@ def get_current_user(token: str = Depends(lambda request: request.cookies.get('a
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 def sanitize_filename(filename: str, max_length: int = 32) -> str:
     # Remove invalid characters
