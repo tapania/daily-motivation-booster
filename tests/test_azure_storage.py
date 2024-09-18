@@ -50,14 +50,15 @@ def test_upload_file_to_blob_failure(mocker, tmp_path, caplog):
     # Create a temporary file
     file_path = tmp_path / "test_upload.txt"
     file_path.write_text("Test content")
-    
+
     # Mock the blob_client.upload_blob to raise an exception
     mock_blob_client = MagicMock()
     mock_blob_client.upload_blob.side_effect = Exception("Upload Failed")
     mock_container_client = MagicMock()
     mock_container_client.get_blob_client.return_value = mock_blob_client
     mocker.patch('backend.azure_storage.container_client', mock_container_client)
-    
+
+    # Ensure that the logger captures ERROR level logs
     with caplog.at_level('ERROR'):
         url = upload_file_to_blob(str(file_path), "test_upload.txt")
         assert url is None

@@ -15,9 +15,18 @@ def test_set_schedule_success(client: TestClient, mocker):
 
     # Mock database session
     mock_db = MagicMock()
+    # Mock ORM operations: delete existing schedules, add new ones, commit, refresh
+    mock_db.query.return_value.filter.return_value.delete.return_value = None
+    mock_db.add_all.return_value = None
+    mock_db.commit.return_value = None
+    mock_db.refresh.side_effect = lambda x: x  # Mock refresh to return the object
+    mock_schedule1 = MagicMock(id=1, user_id=1, day_of_week="Monday", time_of_day="09:00:00")
+    mock_schedule2 = MagicMock(id=2, user_id=1, day_of_week="Wednesday", time_of_day="10:00:00")
+    mock_db.add_all.return_value = None
+    mock_db.query.return_value.filter.return_value.all.return_value = [mock_schedule1, mock_schedule2]
     mocker.patch('backend.main.get_db', return_value=iter([mock_db]))
 
-    # Prepare payload
+    # Prepare payload with valid data
     payload = [
         {
             "day_of_week": "Monday",

@@ -3,6 +3,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
+from backend.models import User
 
 def test_generate_speech_success(client: TestClient, mocker):
     # Mock verify_token to return a user
