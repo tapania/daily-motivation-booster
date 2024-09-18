@@ -113,4 +113,4 @@ def get_current_user_endpoint(request: Request, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     user_data = UserSchema.from_orm(user)
-    return JSONResponse(content=user_data.model_dump())
+    return user_data  # Let FastAPI handle serialization
