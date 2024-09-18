@@ -7,7 +7,7 @@ from unittest.mock import patch
 import os
 
 from backend.main import app
-from backend.database import Base, get_db
+from backend.database import Base
 
 # Load test environment variables
 from dotenv import load_dotenv
@@ -24,16 +24,6 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 # Create the test database
 Base.metadata.create_all(bind=engine)
-
-# Dependency override for the database session
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(scope="module")
 def client():
