@@ -92,10 +92,16 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
     return response
 
 @router.get("/logout")
-def logout(response: Response):
-    response = RedirectResponse(url=FRONTEND_URL)  # Redirect to frontend home
+def logout(request: Request, response: Response):
+    origin = request.headers.get("origin") or request.headers.get("referer")
     response.delete_cookie(key="access_token")
-    return response
+
+    # Check if origin or referer matches the front end
+    if origin and FRONTEND_URL in origin:
+        return {"message": "Successfully logged out"}
+    
+    # If origin doesn't match, redirect to https://algorithmspeaks.com
+    return RedirectResponse(url=FRONTEND_URL)
 
 @router.get("/me", response_model=UserSchema)
 def get_current_user_endpoint(request: Request, db: Session = Depends(get_db)):
