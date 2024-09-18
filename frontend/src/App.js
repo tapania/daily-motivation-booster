@@ -1,5 +1,5 @@
 // frontend/src/App.js
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PreferencesForm from './components/PreferencesForm';
 import PublicSpeeches from './components/PublicSpeeches';
@@ -7,41 +7,19 @@ import MySpeeches from './components/MySpeeches';
 import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
 import Header from './components/Header';
-import API from './api';
+import { AuthContext } from './context/AuthContext';
 import { handleError } from './utils/errorHandler';
+import API, { setLogoutFunction } from './api';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, user, logout, isLoading } = useContext(AuthContext);
 
   useEffect(() => {
-    // Check authentication status
-    const checkAuth = async () => {
-      try {
-        const response = await API.get('/me');
-        setUser(response.data);
-        setIsAuthenticated(true);
-      } catch (error) {
-        setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await API.get('/logout');
-      setIsAuthenticated(false);
-      setUser(null);
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
-  };
+    // Set the logout handler in API interceptors
+    setLogoutFunction(logout);
+  }, [logout]);
 
   if (isLoading) {
     return <div className="text-center mt-10">Loading...</div>;
@@ -51,7 +29,7 @@ function App() {
     <Router>
       <ErrorBoundary>
         <div className="flex flex-col min-h-screen">
-          <Header isAuthenticated={isAuthenticated} handleLogout={handleLogout} />
+          <Header isAuthenticated={isAuthenticated} handleLogout={logout} />
           <div className="container mx-auto px-4 flex-grow">
             <Routes>
               <Route path="/" element={<PublicSpeeches />} />
@@ -81,6 +59,7 @@ function App() {
           <Footer />
         </div>
       </ErrorBoundary>
+      <ToastContainer />
     </Router>
   );
 }

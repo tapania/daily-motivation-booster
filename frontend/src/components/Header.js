@@ -1,8 +1,10 @@
 // frontend/src/components/Header.js
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-function Header({ isAuthenticated, handleLogout }) {
+function Header() {
+  const { isAuthenticated, logout } = useContext(AuthContext);
   const location = useLocation();
 
   return (
@@ -44,7 +46,7 @@ function Header({ isAuthenticated, handleLogout }) {
         <div>
           {isAuthenticated ? (
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="btn btn-sm btn-outline btn-error"
             >
               Logout

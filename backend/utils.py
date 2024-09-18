@@ -5,6 +5,7 @@ import jwt
 from models import User
 from database import SessionLocal
 from dotenv import load_dotenv
+from sqlalchemy.orm import joinedload  # Import joinedload
 
 load_dotenv()
 
@@ -24,7 +25,11 @@ def verify_token(token: str):
         if user_id is None:
             return None
         db = SessionLocal()
-        user = db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).options(
+            joinedload(User.preferences),
+            joinedload(User.schedules),
+            joinedload(User.generated_speeches)
+        ).filter(User.id == user_id).first()
         db.close()
         return user
     except jwt.PyJWTError:

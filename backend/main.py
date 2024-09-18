@@ -21,7 +21,8 @@ from schemas import (
     GeneratedSpeechCreate,
     GeneratedSpeechSchema,
     UserSchema,
-    SpeechRequest
+    SpeechRequest,
+    ScheduleSchema
 )
 from database import SessionLocal, engine, Base
 from auth import router as auth_router
@@ -35,6 +36,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer, ResultReason
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 from openai import AzureOpenAI
+
+from typing import List  # Added for typing List
 
 load_dotenv()
 
@@ -261,4 +264,63 @@ def get_my_speeches(db: Session = Depends(get_db), user: User = Depends(get_curr
         return speeches
     except Exception as e:
         logging.error(f"Error fetching user speeches: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+# New Endpoints for Schedule Management
+
+@app.post("/schedule/", response_model=List[ScheduleSchema], status_code=status.HTTP_201_CREATED)
+def set_schedule(schedules: List[ScheduleCreate], db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """
+    Create or update schedules for the authenticated user.
+    This endpoint replaces existing schedules with the provided list.
+    """
+    try:
+        # Validate day_of_week
+        valid_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        for s in schedules:
+            if s.day_of_week not in valid_days:
+                raise HTTPException(status_code=400, detail=f"Invalid day_of_week: {s.day_of_week}")
+
+        # Ensure no duplicate days
+        days = [s.day_of_week for s in schedules]
+        if len(days) != len(set(days)):
+            raise HTTPException(status_code=400, detail="Duplicate days in schedule")
+
+        # Remove existing schedules
+        db.query(Schedule).filter(Schedule.user_id == user.id).delete()
+
+        # Add new schedules
+        new_schedules = [
+            Schedule(
+                user_id=user.id,
+                day_of_week=s.day_of_week,
+                time_of_day=s.time_of_day
+            ) for s in schedules
+        ]
+        db.add_all(new_schedules)
+        db.commit()
+
+        # Refresh to get the generated IDs
+        for s in new_schedules:
+            db.refresh(s)
+
+        logging.info(f"Schedules updated for user {user.id}")
+
+        return new_schedules
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logging.error(f"Error setting schedules for user {user.id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.get("/schedule/", response_model=List[ScheduleSchema])
+def get_schedule(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """
+    Retrieve the current schedules for the authenticated user.
+    """
+    try:
+        schedules = db.query(Schedule).filter(Schedule.user_id == user.id).all()
+        return schedules
+    except Exception as e:
+        logging.error(f"Error fetching schedules for user {user.id}: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

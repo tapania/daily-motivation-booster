@@ -1,9 +1,11 @@
 // frontend/src/components/MySpeeches.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import API from '../api';
 import { handleError } from '../utils/errorHandler';
+import { AuthContext } from '../context/AuthContext';
 
-function MySpeeches({ user }) {
+function MySpeeches() {
+  const { user } = useContext(AuthContext);
   const [speeches, setSpeeches] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
@@ -87,7 +89,7 @@ function MySpeeches({ user }) {
         <p>You have not generated any speeches yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {speeches.map(speech => (
+          {speeches.map((speech) => (
             <div key={speech.id} className="card shadow-md p-4">
               <h3 className="font-bold mb-2">{speech.speech_text.substring(0, 50)}...</h3>
               <audio controls src={speech.speech_url} className="w-full"></audio>
@@ -104,14 +106,14 @@ function MySpeeches({ user }) {
             placeholder="First Name"
             className="input input-bordered w-full"
             value={formData.first_name}
-            onChange={e => setFormData({ ...formData, first_name: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
             required
           />
           <textarea
             placeholder="User Profile"
             className="textarea textarea-bordered w-full"
             value={formData.user_profile}
-            onChange={e => setFormData({ ...formData, user_profile: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, user_profile: e.target.value })}
             rows={4}
           ></textarea>
           <input
@@ -119,7 +121,7 @@ function MySpeeches({ user }) {
             placeholder="Persona"
             className="input input-bordered w-full"
             value={formData.persona}
-            onChange={e => setFormData({ ...formData, persona: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, persona: e.target.value })}
             required
           />
           <input
@@ -127,17 +129,17 @@ function MySpeeches({ user }) {
             placeholder="Tone"
             className="input input-bordered w-full"
             value={formData.tone}
-            onChange={e => setFormData({ ...formData, tone: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, tone: e.target.value })}
             required
           />
           <select
             className="select select-bordered w-full"
             value={formData.voice}
-            onChange={e => setFormData({ ...formData, voice: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, voice: e.target.value })}
             required
           >
             <option value="">Select a Voice</option>
-            {voicesList.map(voice => (
+            {voicesList.map((voice) => (
               <option key={voice} value={voice}>
                 {voice}
               </option>
