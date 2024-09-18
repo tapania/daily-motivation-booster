@@ -1,8 +1,6 @@
-// src/App.js
+// frontend/src/App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { msalInstance } from './msalConfig';
-import Login from './components/Login';
 import PreferencesForm from './components/PreferencesForm';
 import PublicSpeeches from './components/PublicSpeeches';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -11,50 +9,43 @@ import API from './api';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeMsal = async () => {
-      await msalInstance.initialize();
-      setIsInitialized(true);
-    };
-
-    initializeMsal();
-  }, []);
-
-  useEffect(() => {
-    const handleRedirect = async () => {
-      if (isInitialized) {
-        try {
-          const result = await msalInstance.handleRedirectPromise();
-          if (result) {
-            // User has been redirected from login
-            setIsAuthenticated(true);
-            // You might want to call your backend here to exchange the token
-            // const response = await API.post('/process_token', { idToken: result.idToken });
-            // console.log('Authentication successful:', response.data);
-          } else {
-            // Check if user is already signed in
-            const account = msalInstance.getActiveAccount();
-            if (account) {
-              setIsAuthenticated(true);
-            }
-          }
-        } catch (error) {
-          console.error("Error during redirect handling:", error);
-        }
+    // Check authentication status
+    const checkAuth = async () => {
+      try {
+        const response = await API.get('/me');
+        setUser(response.data);
+        setIsAuthenticated(true);
+      } catch (error) {
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    handleRedirect();
-  }, [isInitialized]);
+    checkAuth();
+  }, []);
 
-  const handleLogout = async () => {
-    await msalInstance.logoutRedirect();
+  const handleLogin = () => {
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login`;
   };
 
-  if (!isInitialized) {
-    return <div>Initializing...</div>;
+  const handleLogout = async () => {
+    try {
+      await API.get('/logout');
+      setIsAuthenticated(false);
+      setUser(null);
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -86,7 +77,12 @@ function App() {
                 ) : (
                   <>
                     <div className="flex justify-center my-4">
-                      <Login />
+                      <button
+                        onClick={handleLogin}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      >
+                        Login with Microsoft
+                      </button>
                     </div>
                     <PublicSpeeches />
                   </>

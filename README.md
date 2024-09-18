@@ -17,7 +17,6 @@ Welcome to the game! This guide will help you set up the project on a fresh Ubun
   - [Azure Speech Service Key](#azure-speech-service-key)
   - [Microsoft App Registration](#microsoft-app-registration)
   - [Email SMTP Credentials](#email-smtp-credentials)
-  - [Microsoft Teams Webhook URL](#microsoft-teams-webhook-url)
 - [Configuring Environment Variables](#configuring-environment-variables)
   - [Backend `.env` Configuration](#backend-env-configuration)
   - [Frontend `.env` Configuration](#frontend-env-configuration)
@@ -39,7 +38,7 @@ This web app generates personalized motivational speeches using GPT-4 through Az
 - Log in using their Microsoft account.
 - Set preferences and schedule for receiving speeches.
 - Choose from various personas and tones.
-- Receive speeches via email or Microsoft Teams.
+- Receive speeches via email.
 
 ---
 
@@ -208,15 +207,6 @@ You need SMTP credentials to send emails. You can use providers like SendGrid, G
    - **Username:** `apikey`
    - **Password:** Your SendGrid API Key.
 
-### Microsoft Teams Webhook URL
-
-1. **Create an Incoming Webhook:**
-
-   - In Teams, go to the channel where you want to receive messages.
-   - Click on **...** next to the channel name > **Connectors**.
-   - Search for **Incoming Webhook** and configure it.
-   - Copy the **Webhook URL** provided.
-
 ---
 
 ## Configuring Environment Variables
@@ -245,9 +235,6 @@ EMAIL_HOST=smtp.sendgrid.net
 EMAIL_PORT=587
 EMAIL_HOST_USER=apikey
 EMAIL_HOST_PASSWORD=your_sendgrid_api_key
-
-# Microsoft Teams Webhook
-TEAMS_WEBHOOK_URL=your_teams_webhook_url
 
 # Application Configuration
 ALLOWED_ORIGINS=http://localhost:3000
@@ -385,7 +372,7 @@ The scheduler script (`scheduler.py`) needs to run hourly to generate and send s
 
 - **User Notifications:**
 
-  - Users will receive speeches via email and optionally through Microsoft Teams.
+  - Users will receive speeches via email.
   - Ensure that users consent to receiving communications.
 
 - **Error Handling:**

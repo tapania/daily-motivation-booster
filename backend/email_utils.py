@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import logging
 from azure.communication.email import EmailClient
 from azure.core.exceptions import AzureError
+import base64
+
 
 load_dotenv()
 
@@ -33,11 +35,11 @@ def send_email(to_email, subject, content, attachments=None):
                 with open(file_path, 'rb') as f:
                     file_data = f.read()
                     file_name = os.path.basename(file_path)
-                attachment = {
-                    "name": file_name,
-                    "contentType": "audio/wav",
-                    "contentInBase64": file_data.encode('base64').decode('utf-8')
-                }
+                    attachment = {
+                        "name": file_name,
+                        "contentType": "audio/wav",
+                        "contentInBase64": base64.b64encode(file_data).decode('utf-8')
+                    }
                 message["attachments"].append(attachment)
 
         poller = client.begin_send(message)

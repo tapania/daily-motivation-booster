@@ -11,21 +11,20 @@ import openai
 from azure.storage.blob import BlobClient
 from azure_storage import upload_file_to_blob
 from email_utils import send_email
-from teams_webhook import send_teams_message
 import logging
 import requests
 import json
 import subprocess
 from datetime import datetime
 from moviepy.editor import ImageSequenceClip, AudioFileClip, ImageClip, concatenate_videoclips
-
+import pytz
 
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 SPEECH_KEY = os.getenv('AZURE_SPEECH_SUBSCRIPTION_KEY')
 SPEECH_REGION = os.getenv('AZURE_SERVICE_REGION')
-SAS_URL = os.getenv('AZURE_BLOB_SAS_URL')
+SAS_URL = os.getenv('AZURE_CONTAINER_SAS_URL')
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -71,9 +70,6 @@ async def generate_speech(user, preferences):
         # Send email to user
         send_email(user.email, "Your Motivational Speech", "Please find your motivational speech attached.", [filename])
 
-        # Send message to Teams
-        send_teams_message(user.first_name, speech_text)
-
         # Clean up the audio file if needed
         os.remove(filename)
 
@@ -87,9 +83,10 @@ def main():
     users = db.query(User).all()
     for user in users:
         try:
-            user_timezone = datetime.timezone(datetime.timedelta(hours=int(user.timezone)))
-        except ValueError:
-            user_timezone = datetime.timezone.utc
+            user_timezone = pytz.timezone(user.timezone)
+        except pytz.UnknownTimeZoneError:
+            user_timezone = pytz.UTC
+        
         user_time = now.astimezone(user_timezone)
         schedules = db.query(Schedule).filter(Schedule.user_id == user.id).all()
         for schedule in schedules:

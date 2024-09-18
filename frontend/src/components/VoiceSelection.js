@@ -1,4 +1,4 @@
-// src/components/VoiceSelection.js
+// frontend/src/components/VoiceSelection.js
 import React, { useEffect, useState } from 'react';
 import API from '../api';
 import { handleError } from '../utils/errorHandler';

@@ -1,3 +1,4 @@
+# backend/main.py
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -55,21 +56,20 @@ ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=ALLOWED_ORIGINS,  # e.g., ["https://your-frontend-domain.com"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Environment variables
-SPEECH_KEY = os.getenv('SPEECH_KEY')
-SPEECH_REGION = os.getenv('SPEECH_REGION')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+AZURE_SPEECH_SUBSCRIPTION_KEY = os.getenv('AZURE_SPEECH_SUBSCRIPTION_KEY')
+AZURE_SPEECH_REGION = os.getenv('AZURE_SPEECH_REGION')
 
 def get_current_user(token: str = Depends(lambda request: request.cookies.get('access_token'))):
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-    user = verify_token(token.split(" ")[1])
+    user = verify_token(token)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
@@ -136,9 +136,8 @@ async def generate_speech_endpoint(speech_request: SpeechRequest):
         system_prompt = f"You are speaking to {speech_request.first_name}"
         if speech_request.user_profile:
             system_prompt += f", whose motivational profile is:\n{speech_request.user_profile}\n"
-        system_prompt += f"\nYou are motivational coach with following profile:\n{speech_request.persona}:{speech_request.tone}\n."
+        system_prompt += f"\nYou are a motivational coach with the following profile:\n{speech_request.persona}:{speech_request.tone}\n."
         prompt = f"\nPlease write a motivational speech for {speech_request.first_name} in the {speech_request.persona} style and focus on using the correct triggers from {speech_request.first_name}'s profile to target the speech for just him/her."
-
 
         # Use Azure OpenAI to generate speech text
         client = AzureOpenAI(
@@ -157,7 +156,7 @@ async def generate_speech_endpoint(speech_request: SpeechRequest):
         speech_text = response.choices[0].message.content
 
         # Convert text to speech using Azure TTS
-        speech_config = SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
+        speech_config = SpeechConfig(subscription=AZURE_SPEECH_SUBSCRIPTION_KEY, region=AZURE_SPEECH_REGION)
         speech_config.speech_synthesis_voice_name = speech_request.voice
         filename = f"speech_{sanitize_filename(speech_request.first_name)}_{datetime.datetime.now().isoformat()}.wav"
         audio_config = AudioOutputConfig(filename=filename)

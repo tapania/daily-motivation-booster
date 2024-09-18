@@ -1,4 +1,4 @@
-// src/components/PublicSpeeches.js
+// frontend/src/components/PublicSpeeches.js
 import React, { useEffect, useState } from 'react';
 import API from '../api';
 import { handleError } from '../utils/errorHandler';
@@ -25,7 +25,7 @@ function PublicSpeeches() {
 
     // Fetch available voices
     API.get('/voices/')
-      .then(response => setVoices(response.data))
+      .then(response => setVoices(response.data.voices))
       .catch(error => handleError(error));
   }, []);
 
@@ -96,8 +96,8 @@ function PublicSpeeches() {
           >
             <option value="">Select a Voice</option>
             {voices.map(voice => (
-              <option key={voice.shortName} value={voice.shortName}>
-                {voice.localName} - {voice.gender} ({voice.localeName})
+              <option key={voice} value={voice}>
+                {voice}
               </option>
             ))}
           </select>

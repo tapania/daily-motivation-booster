@@ -1,5 +1,5 @@
-// src/components/ScheduleForm.js
-import React, { useState } from 'react';
+// frontend/src/components/ScheduleForm.js
+import React from 'react';
 
 function ScheduleForm({ schedule, setSchedule }) {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
