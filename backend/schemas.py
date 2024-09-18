@@ -1,7 +1,7 @@
 # schemas.py
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import time
+from datetime import time, datetime
 
 class GeneratedSpeechBase(BaseModel):
     speech_text: str
