@@ -14,4 +14,4 @@ azure-cognitiveservices-speech
 azure-storage-blob
 requests
 email-validator
-jwt
+PyJWT
