@@ -1,4 +1,4 @@
-// src/utils/errorHandler.js
+// frontend/src/utils/errorHandler.js
 export function handleError(error) {
   if (error.response) {
     console.error('Server responded with an error:', error.response);

@@ -1,0 +1,61 @@
+// frontend/src/utils/timezones.js
+export const timezones = [
+    "America/Los_Angeles",
+    "America/Phoenix",
+    "America/Vancouver",
+    "America/Denver",
+    "America/Mexico_City",
+    "America/Chicago",
+    "America/New_York",
+    "America/Sao_Paulo",
+    "UTC",
+    "Africa/Abidjan",
+    "Europe/London",
+    "Europe/Berlin",
+    "Africa/Johannesburg",
+    "Europe/Madrid",
+    "Europe/Paris",
+    "Europe/Rome",
+    "Europe/Moscow",
+    "Asia/Dubai",
+    "Asia/Kolkata",
+    "Asia/Shanghai",
+    "Asia/Singapore",
+    "Asia/Hong_Kong",
+    "Asia/Tokyo",
+    "Asia/Seoul",
+    "Australia/Sydney",
+    "Pacific/Auckland"
+];
+
+
+  export const timezoneLabels = [
+    "America/Los_Angeles (UTC-07)",
+    "America/Phoenix (UTC-07)",
+    "America/Vancouver (UTC-07)",
+    "America/Denver (UTC-06)",
+    "America/Mexico_City (UTC-06)",
+    "America/Chicago (UTC-05)",
+    "America/New_York (UTC-04)",
+    "America/Sao_Paulo (UTC-03)",
+    "UTC (UTC+00)",
+    "Africa/Abidjan (UTC+00)",
+    "Europe/London (UTC+01)",
+    "Europe/Berlin (UTC+02)",
+    "Africa/Johannesburg (UTC+02)",
+    "Europe/Madrid (UTC+02)",
+    "Europe/Paris (UTC+02)",
+    "Europe/Rome (UTC+02)",
+    "Europe/Moscow (UTC+03)",
+    "Asia/Dubai (UTC+04)",
+    "Asia/Kolkata (UTC+06)",
+    "Asia/Shanghai (UTC+08)",
+    "Asia/Singapore (UTC+08)",
+    "Asia/Hong_Kong (UTC+08)",
+    "Asia/Tokyo (UTC+09)",
+    "Asia/Seoul (UTC+09)",
+    "Australia/Sydney (UTC+10)",
+    "Pacific/Auckland (UTC+12)"
+];
+
+  

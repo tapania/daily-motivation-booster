@@ -33,6 +33,16 @@ class VoiceEnum(enum.Enum):
     Roger = 'Roger'
     Steffan = 'Steffan'
 
+class GeneratedSpeech(Base):
+    __tablename__ = 'generated_speeches'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    speech_text = Column(Text, nullable=False)
+    speech_url = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="generated_speeches")
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
@@ -43,6 +53,7 @@ class User(Base):
     email = Column(String, unique=True)
     preferences = relationship("Preference", back_populates="user", uselist=False)
     schedules = relationship("Schedule", back_populates="user")
+    generated_speeches = relationship("GeneratedSpeech", back_populates="user")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class Preference(Base):

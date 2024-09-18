@@ -3,6 +3,30 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import time
 
+class GeneratedSpeechBase(BaseModel):
+    speech_text: str
+    speech_url: str
+
+class GeneratedSpeechCreate(GeneratedSpeechBase):
+    pass
+
+class GeneratedSpeech(GeneratedSpeechBase):
+    id: int
+    user_id: Optional[int] = None
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class PreferencesUpdate(BaseModel):
+    first_name: str
+    user_profile: Optional[str] = None
+    timezone: str
+    persona: str
+    tone: str
+    voice: str
+
+
 class PreferenceBase(BaseModel):
     persona: str
     tone: str
