@@ -1,9 +1,7 @@
 # backend/main.py
-import re
 from fastapi import FastAPI, Depends, HTTPException, status, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from typing import Optional, List
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 import os
@@ -11,6 +9,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import datetime
 import asyncio
+import re
 
 from models import User, Preference, Schedule, GeneratedSpeech
 from schemas import (
@@ -26,21 +25,20 @@ from schemas import (
 )
 from database import SessionLocal, engine, Base
 from auth import router as auth_router
-from utils import verify_token
+from utils import verify_token, create_access_token
 from azure_storage import upload_file_to_blob
 from email_utils import send_email
-from utils import create_access_token
 
 from fastapi.middleware.cors import CORSMiddleware
 
 # Azure OpenAI and Speech imports
-from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer
+from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer, ResultReason
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 from openai import AzureOpenAI
 
-# Initialize logging
 load_dotenv()
 
+# Initialize logging
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'app.log')
 os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 handler = RotatingFileHandler(log_file_path, maxBytes=1000000, backupCount=5)
@@ -56,7 +54,7 @@ ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,  # e.g., ["https://your-frontend-domain.com"]
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -157,7 +155,7 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
-        if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
+        if result.reason != ResultReason.SynthesizingAudioCompleted:
             logging.error(f"Speech synthesis failed")
             raise HTTPException(status_code=500, detail="Speech synthesis failed")
 
@@ -219,7 +217,7 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
-        if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
+        if result.reason != ResultReason.SynthesizingAudioCompleted:
             logging.error(f"Speech synthesis failed for public speech")
             raise HTTPException(status_code=500, detail="Speech synthesis failed")
 

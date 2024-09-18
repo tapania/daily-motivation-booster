@@ -11,6 +11,7 @@ azure-core
 openai
 azure-identity
 azure-cognitiveservices-speech
+azure-communication-email
 azure-storage-blob
 requests
 email-validator

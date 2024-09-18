@@ -1,5 +1,5 @@
 # backend/schemas.py
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import time, datetime
 from enum import Enum
@@ -44,8 +44,7 @@ class GeneratedSpeechSchema(GeneratedSpeechBase):
     user_id: Optional[int] = None
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PreferencesUpdate(BaseModel):
     first_name: str
@@ -54,6 +53,8 @@ class PreferencesUpdate(BaseModel):
     persona: str
     tone: str
     voice: VoiceEnum
+
+    model_config = ConfigDict(from_attributes=True)
 
 class PreferenceBase(BaseModel):
     persona: str
@@ -67,8 +68,7 @@ class PreferenceSchema(PreferenceBase):
     id: int
     user_id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ScheduleBase(BaseModel):
     day_of_week: str
@@ -81,8 +81,7 @@ class ScheduleSchema(ScheduleBase):
     id: int
     user_id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserBase(BaseModel):
     first_name: str
@@ -100,8 +99,7 @@ class UserSchema(UserBase):
     generated_speeches: List[GeneratedSpeechSchema] = []
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SpeechRequest(BaseModel):
     first_name: str
@@ -109,3 +107,5 @@ class SpeechRequest(BaseModel):
     persona: str
     tone: str
     voice: VoiceEnum
+
+    model_config = ConfigDict(from_attributes=True)
