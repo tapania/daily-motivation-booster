@@ -1,7 +1,36 @@
-# schemas.py
+# backend/schemas.py
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import time, datetime
+from enum import Enum
+
+class VoiceEnum(str, Enum):
+    Ava = 'Ava'
+    Andrew = 'Andrew'
+    Emma = 'Emma'
+    Brian = 'Brian'
+    Jenny = 'Jenny'
+    Guy = 'Guy'
+    Aria = 'Aria'
+    Davis = 'Davis'
+    Jane = 'Jane'
+    Jason = 'Jason'
+    Sara = 'Sara'
+    Tony = 'Tony'
+    Nancy = 'Nancy'
+    Amber = 'Amber'
+    Ana = 'Ana'
+    Ashley = 'Ashley'
+    Brandon = 'Brandon'
+    Christopher = 'Christopher'
+    Cora = 'Cora'
+    Elizabeth = 'Elizabeth'
+    Eric = 'Eric'
+    Jacob = 'Jacob'
+    Michelle = 'Michelle'
+    Monica = 'Monica'
+    Roger = 'Roger'
+    Steffan = 'Steffan'
 
 class GeneratedSpeechBase(BaseModel):
     speech_text: str
@@ -10,7 +39,7 @@ class GeneratedSpeechBase(BaseModel):
 class GeneratedSpeechCreate(GeneratedSpeechBase):
     pass
 
-class GeneratedSpeech(GeneratedSpeechBase):
+class GeneratedSpeechSchema(GeneratedSpeechBase):
     id: int
     user_id: Optional[int] = None
     created_at: datetime
@@ -24,18 +53,17 @@ class PreferencesUpdate(BaseModel):
     timezone: str
     persona: str
     tone: str
-    voice: str
-
+    voice: VoiceEnum
 
 class PreferenceBase(BaseModel):
     persona: str
     tone: str
-    voice: str
+    voice: VoiceEnum
 
 class PreferenceCreate(PreferenceBase):
     pass
 
-class Preference(PreferenceBase):
+class PreferenceSchema(PreferenceBase):
     id: int
     user_id: int
 
@@ -49,7 +77,7 @@ class ScheduleBase(BaseModel):
 class ScheduleCreate(ScheduleBase):
     pass
 
-class Schedule(ScheduleBase):
+class ScheduleSchema(ScheduleBase):
     id: int
     user_id: int
 
@@ -64,10 +92,20 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     microsoft_id: str
 
-class User(UserBase):
+class UserSchema(UserBase):
     id: int
-    preferences: Optional[Preference] = None
-    schedules: List[Schedule] = []
+    email: str
+    preferences: Optional[PreferenceSchema] = None
+    schedules: List[ScheduleSchema] = []
+    generated_speeches: List[GeneratedSpeechSchema] = []
+    created_at: datetime
 
     class Config:
         orm_mode = True
+
+class SpeechRequest(BaseModel):
+    first_name: str
+    user_profile: Optional[str] = None
+    persona: str
+    tone: str
+    voice: VoiceEnum

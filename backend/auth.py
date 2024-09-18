@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import os
 import logging
 from urllib.parse import urlencode
+from schemas import UserSchema
 
 load_dotenv()
 
@@ -99,7 +100,7 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
 
 @router.get("/logout")
 def logout(response: Response):
-    response = RedirectResponse(url="/")  # Redirect to frontend home
+    response = RedirectResponse(url=FRONTEND_URL)  # Redirect to frontend home
     response.delete_cookie(key="access_token")
     return response
 
@@ -111,11 +112,5 @@ def get_current_user_endpoint(request: Request, db: Session = Depends(get_db)):
     user = verify_token(token)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    user_data = {
-        "id": user.id,
-        "first_name": user.first_name,
-        "email": user.email,
-        "timezone": user.timezone,
-        "user_profile": user.user_profile
-    }
-    return JSONResponse(content=user_data)
+    user_data = UserSchema.from_orm(user)
+    return JSONResponse(content=user_data.dict())

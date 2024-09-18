@@ -1,37 +1,46 @@
 # backend/main.py
+import re
 from fastapi import FastAPI, Depends, HTTPException, status, Request
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from azure_storage import upload_file_to_blob
+from fastapi.responses import JSONResponse, RedirectResponse
 from typing import Optional, List
-import datetime
-
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from models import User, Preference, Schedule, GeneratedSpeech
-from schemas import PreferenceCreate, ScheduleCreate, UserCreate, UserBase, PreferencesUpdate, GeneratedSpeechCreate, GeneratedSpeech
-from database import SessionLocal, engine, Base
-from auth import router as auth_router
-from fastapi.middleware.cors import CORSMiddleware
-from utils import verify_token
+from dotenv import load_dotenv
+import os
 import logging
 from logging.handlers import RotatingFileHandler
-import os
-from dotenv import load_dotenv
+import datetime
+import asyncio
+
+from models import User, Preference, Schedule, GeneratedSpeech
+from schemas import (
+    PreferenceCreate,
+    ScheduleCreate,
+    UserCreate,
+    UserBase,
+    PreferencesUpdate,
+    GeneratedSpeechCreate,
+    GeneratedSpeechSchema,
+    UserSchema,
+    SpeechRequest
+)
+from database import SessionLocal, engine, Base
+from auth import router as auth_router
+from utils import verify_token
+from azure_storage import upload_file_to_blob
+from email_utils import send_email
+from utils import create_access_token
+
+from fastapi.middleware.cors import CORSMiddleware
 
 # Azure OpenAI and Speech imports
 from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
-from openai import AzureOpenAI as OpenAIClient
-
-import re
-
-def sanitize_filename(filename: str, max_length: int = 32) -> str:
-    # Existing sanitize function...
-    pass
-
-load_dotenv()
+from openai import AzureOpenAI
 
 # Initialize logging
+load_dotenv()
+
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'app.log')
 os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 handler = RotatingFileHandler(log_file_path, maxBytes=1000000, backupCount=5)
@@ -72,7 +81,13 @@ def get_db():
     finally:
         db.close()
 
-@app.patch("/preferences/", response_model=User)
+def sanitize_filename(filename: str, max_length: int = 32) -> str:
+    # Remove invalid characters
+    filename = re.sub(r'[^a-zA-Z0-9_-]', '', filename)
+    # Truncate to max_length
+    return filename[:max_length]
+
+@app.patch("/preferences/", response_model=UserSchema)
 def update_preferences(preferences: PreferencesUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     try:
         # Update user info
@@ -108,7 +123,7 @@ def get_voices():
     
     return JSONResponse(content={"voices": voices})
 
-@app.post("/generate_speech", response_model=GeneratedSpeech)
+@app.post("/generate_speech", response_model=GeneratedSpeechSchema)
 async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     try:
         # Generate speech text
@@ -120,9 +135,9 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
 
         # Use Azure OpenAI to generate speech text
         client = AzureOpenAI(
-            api_key = os.getenv("AZURE_OPENAI_API_KEY"),
-            api_version = "2024-02-15-preview",
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_version="2024-02-15-preview",
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
         )
         
         response = client.chat.completions.create(
@@ -137,7 +152,8 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=AZURE_SPEECH_SUBSCRIPTION_KEY, region=AZURE_SPEECH_REGION)
         speech_config.speech_synthesis_voice_name = speech_request.voice
-        filename = f"speech_{sanitize_filename(speech_request.first_name)}_{datetime.datetime.now().isoformat()}.wav"
+        timestamp = datetime.datetime.now().isoformat().replace(":", "-")
+        filename = f"speech_{sanitize_filename(speech_request.first_name)}_{timestamp}.wav"
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
@@ -169,7 +185,7 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
         logging.error(f"Error generating speech: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@app.post("/generate_public_speech", response_model=GeneratedSpeech)
+@app.post("/generate_public_speech", response_model=GeneratedSpeechSchema)
 async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Session = Depends(get_db)):
     try:
         # Generate speech text
@@ -181,9 +197,9 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
 
         # Use Azure OpenAI to generate speech text
         client = AzureOpenAI(
-            api_key = os.getenv("AZURE_OPENAI_API_KEY"),
-            api_version = "2024-02-15-preview",
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            api_version="2024-02-15-preview",
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
         )
         
         response = client.chat.completions.create(
@@ -198,7 +214,8 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=AZURE_SPEECH_SUBSCRIPTION_KEY, region=AZURE_SPEECH_REGION)
         speech_config.speech_synthesis_voice_name = speech_request.voice
-        filename = f"speech_public_{sanitize_filename(speech_request.first_name)}_{datetime.datetime.now().isoformat()}.wav"
+        timestamp = datetime.datetime.now().isoformat().replace(":", "-")
+        filename = f"speech_public_{sanitize_filename(speech_request.first_name)}_{timestamp}.wav"
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
@@ -230,7 +247,7 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
         logging.error(f"Error generating public speech: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@app.get("/public_speeches", response_model=List[GeneratedSpeech])
+@app.get("/public_speeches", response_model=List[GeneratedSpeechSchema])
 def get_public_speeches(db: Session = Depends(get_db)):
     try:
         speeches = db.query(GeneratedSpeech).filter(GeneratedSpeech.user_id == None).all()
@@ -239,7 +256,7 @@ def get_public_speeches(db: Session = Depends(get_db)):
         logging.error(f"Error fetching public speeches: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@app.get("/my_speeches/", response_model=List[GeneratedSpeech])
+@app.get("/my_speeches/", response_model=List[GeneratedSpeechSchema])
 def get_my_speeches(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     try:
         speeches = db.query(GeneratedSpeech).filter(GeneratedSpeech.user_id == user.id).all()
