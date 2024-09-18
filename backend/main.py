@@ -51,8 +51,6 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(auth_router)
-
 ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
 
 app.add_middleware(
@@ -62,6 +60,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router)
 
 # Environment variables
 AZURE_SPEECH_SUBSCRIPTION_KEY = os.getenv('AZURE_SPEECH_SUBSCRIPTION_KEY')
