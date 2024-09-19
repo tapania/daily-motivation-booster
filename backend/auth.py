@@ -62,11 +62,19 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
 
     microsoft_id = result['id_token_claims']['oid']
     email = result['id_token_claims'].get('preferred_username') or result['id_token_claims'].get('email')
+    
     if not email:
         logging.error("Email not found in token claims")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email not found in token claims")
+
+    # Validate email using regex or other methods
+    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    if not re.match(email_regex, email):
+        logging.error("Invalid email format")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
+
     first_name = result['id_token_claims'].get('given_name', '')
-    user_profile = result['id_token_claims'].get('user_profile', '')  # Adjust based on actual claims
+    user_profile = '' 
     timezone = 'UTC'  # Default timezone or extract from claims if available
 
     user = db.query(User).filter(User.microsoft_id == microsoft_id).first()
@@ -97,10 +105,16 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
     return response
 
 @router.get("/logout")
-def logout(request: Request):
-    response = RedirectResponse(url=FRONTEND_URL)
+def logout(request: Request, response: Response):
+    origin = request.headers.get("origin") or request.headers.get("referer")
     response.delete_cookie(key="access_token")
-    return response
+
+    # Check if origin or referer matches the front end
+    if origin and FRONTEND_URL in origin:
+        return {"message": "Successfully logged out"}
+    
+    # If origin doesn't match, redirect to https://algorithmspeaks.com
+    return RedirectResponse(url=FRONTEND_URL)
 
 @router.get("/me", response_model=UserSchema)
 def get_current_user_endpoint(request: Request, db: Session = Depends(get_db)):
