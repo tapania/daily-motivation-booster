@@ -88,7 +88,7 @@ async def generate_speech(user, preferences, db):
 
 def main():
     db = SessionLocal()
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(pytz.utc)
     users = db.query(User).all()
     for user in users:
         try:

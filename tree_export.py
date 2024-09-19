@@ -7,7 +7,7 @@ import win32con
 CONFIG = {
     "source_dir": ".",  # Default to current directory; can be overridden via command-line argument
     "ignore_files": {"README.md", "LICENSE", "tree_export.py", "gunicorn_conf.py"},  # Files to ignore
-    "ignore_dirs": {"venv", "__pycache__", ".git", "node_modules", "alembic", "frontend"},  # Directories to ignore
+    "ignore_dirs": {"venv", "__pycache__", ".git", "node_modules", "alembic", "tests"},  # Directories to ignore
     "file_patterns": ["*.py", "*.js", "*.jsx", "*.ts", "*.tsx"],  # File patterns to include
 }
 

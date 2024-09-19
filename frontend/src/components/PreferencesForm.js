@@ -96,7 +96,7 @@ function PreferencesForm() {
 
     try {
       // Update user info and preferences
-      await API.post('/preferences/', preferences);
+      await API.patch('/preferences/', preferences);
       // Update schedule
       await API.post('/schedule/', schedule);
       setMessage('Preferences saved successfully!');

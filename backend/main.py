@@ -67,10 +67,11 @@ app.include_router(auth_router)
 AZURE_SPEECH_SUBSCRIPTION_KEY = os.getenv('AZURE_SPEECH_SUBSCRIPTION_KEY')
 AZURE_SPEECH_REGION = os.getenv('AZURE_SPEECH_REGION')
 
-def get_current_user(token: str = Depends(lambda request: request.cookies.get('access_token'))):
+def get_current_user(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get('access_token')
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-    user = verify_token(token)
+    user = verify_token(token, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
@@ -145,7 +146,7 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
 
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=AZURE_SPEECH_SUBSCRIPTION_KEY, region=AZURE_SPEECH_REGION)
-        speech_config.speech_synthesis_voice_name = speech_request.voice
+        speech_config.speech_synthesis_voice_name = f"en-US-{speech_request.voice}Neural"
         timestamp = datetime.datetime.now().isoformat().replace(":", "-")
         filename = f"speech_{sanitize_filename(speech_request.first_name)}_{timestamp}.wav"
         audio_config = AudioOutputConfig(filename=filename)
@@ -241,7 +242,7 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
         logging.error(f"Error generating public speech: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@app.get("/public_speeches", response_model=List[GeneratedSpeechSchema])
+@app.get("/public_speeches/", response_model=List[GeneratedSpeechSchema])
 def get_public_speeches(db: Session = Depends(get_db)):
     try:
         speeches = db.query(GeneratedSpeech).filter(GeneratedSpeech.user_id == None).all()
