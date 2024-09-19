@@ -68,6 +68,9 @@ AZURE_SPEECH_SUBSCRIPTION_KEY = os.getenv('AZURE_SPEECH_SUBSCRIPTION_KEY')
 AZURE_SPEECH_REGION = os.getenv('AZURE_SPEECH_REGION')
 
 def get_current_user(request: Request, db: Session = Depends(get_db)):
+    if request.method == "OPTIONS":
+        # Skip authentication for preflight requests
+        return None
     token = request.cookies.get('access_token')
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
