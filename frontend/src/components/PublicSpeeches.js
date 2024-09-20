@@ -1,6 +1,6 @@
-// frontend/src/components/PublicSpeeches.js
+// src/components/PublicSpeeches.js
 import React, { useEffect, useState, useContext } from 'react';
-import PersonaSelection from './PersonaSelection';
+import SpeechForm from './SpeechForm'; // New import
 import API from '../api';
 import { handleError } from '../utils/errorHandler';
 import { AuthContext } from '../context/AuthContext';
@@ -9,18 +9,8 @@ import { personas } from '../personas';
 function PublicSpeeches() {
   const { isAuthenticated } = useContext(AuthContext);
   const [speeches, setSpeeches] = useState([]);
-  const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  const [formData, setFormData] = useState({
-    first_name: '',
-    user_profile: '',
-    persona: '',
-    tone: '',
-    voice: '',
-  });
-  const [voicesList, setVoicesList] = useState([]);
 
   useEffect(() => {
     // Fetch public speeches
@@ -34,85 +24,31 @@ function PublicSpeeches() {
       }
     };
 
-    // Fetch available voices
-    const fetchVoices = async () => {
-      try {
-        const response = await API.get('/voices/');
-        setVoicesList(response.data.voices);
-      } catch (error) {
-        handleError(error);
-        setError('Failed to load available voices.');
-      }
-    };
 
-    fetchPublicSpeeches();
-    fetchVoices();
-  }, []);
 
-  const handleGenerate = async (e) => {
-    e.preventDefault();
-    setGenerating(true);
+  /**
+   * Handles the submission of the public speech form.
+   * @param {Object} formData - The data from the SpeechForm.
+   */
+  const handleGenerate = async (formData) => {
     setError('');
     setMessage('');
     try {
       const response = await API.post('/generate_public_speech', formData);
       setMessage('Public speech generated successfully! 🎉');
-      setFormData({
-        first_name: '',
-        user_profile: '',
-        persona: '',
-        tone: '',
-        voice: '',
-      });
       // Fetch updated public speeches
       const speechesResponse = await API.get('/public_speeches/');
       setSpeeches(speechesResponse.data);
     } catch (error) {
       handleError(error);
       setError('An error occurred while generating the public speech.');
-    } finally {
-      setGenerating(false);
     }
   };
 
-  /**
-   * Handles persona selection and updates the corresponding tone.
-   * @param {string} personaName - The selected persona name.
-   */
-  const handlePublicPersonaSelect = (personaName) => {
-    const selected = personas.find(p => p.name === personaName);
-    if (selected) {
-      setFormData({
-        ...formData,
-        persona: selected.name,
-        tone: selected.tone,
-      });
-    }
-  };
 
   return (
     <div className="mt-8">
       <h2 className="text-3xl font-bold mb-4">Public Speeches</h2>
-
-      {/* Instructions Pane */}
-      <div className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box mb-6">
-        <input type="checkbox" />
-        <div className="collapse-title text-xl font-medium">
-          Want to Create a Public Speech?
-        </div>
-        <div className="collapse-content">
-          <p className="mt-2">
-            Ready to share some motivation with the world? Here's how to craft a public speech that resonates:
-          </p>
-          <ol className="list-decimal list-inside mt-2">
-            <li><strong>First Name:</strong> Add your name to make the speech authentically yours.</li>
-            <li><strong>User Profile:</strong> Let us understand your background to personalize your message.</li>
-            <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
-            <li><strong>Voice:</strong> Select a voice that best conveys your motivational energy.</li>
-          </ol>
-          <p className="mt-2">Hit "Generate Public Speech" and inspire your audience! ✨</p>
-        </div>
-      </div>
 
       {/* Display Error Message */}
       {error && (
@@ -144,63 +80,31 @@ function PublicSpeeches() {
       {/* Generate New Public Speech Form - Visible Only to Authenticated Users */}
       {isAuthenticated ? (
         <div className="mt-8">
-          <h2 className="text-3xl font-bold mb-4">Generate a Public Speech</h2>
-          <form onSubmit={handleGenerate} className="grid grid-cols-1 gap-4">
-            <input
-              type="text"
-              placeholder="🚀 Your First Name"
-              className="input input-bordered w-full"
-              value={formData.first_name}
-              onChange={e => setFormData({ ...formData, first_name: e.target.value })}
-              required
-            />
-            <textarea
-              placeholder="📝 Tell us about yourself..."
-              className="textarea textarea-bordered w-full"
-              value={formData.user_profile}
-              onChange={e => setFormData({ ...formData, user_profile: e.target.value })}
-              rows={4}
-            ></textarea>
 
-            <PersonaSelection selectedPersona={formData.persona} onSelectPersona={handlePublicPersonaSelect} />
-
-            <input
-              type="text"
-              placeholder="🎤 Persona Name (e.g., Coach Carter)"
-              className="input input-bordered w-full"
-              value={formData.persona}
-              onChange={e => setFormData({ ...formData, persona: e.target.value })}
-              required
-            />
-            <textarea
-              placeholder="🗣️ Tone Description (e.g., Energetic and Persuasive)"
-              className="textarea textarea-bordered w-full"
-              value={formData.tone}
-              onChange={e => setFormData({ ...formData, tone: e.target.value })}
-              rows={4}
-              required
-            ></textarea>
-            <select
-              className="select select-bordered w-full"
-              value={formData.voice}
-              onChange={e => setFormData({ ...formData, voice: e.target.value })}
-              required
-            >
-              <option value="">🎤 Select a Voice</option>
-              {voicesList.map(voice => (
-                <option key={voice} value={voice}>
-                  {voice}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className={`btn btn-primary ${generating ? 'loading' : ''}`}
-              disabled={generating}
-            >
-              {generating ? 'Cranking Up the Energy...' : 'Generate Your Boost! 🚀'}
-            </button>
-          </form>
+          <SpeechForm
+            initialData={{
+              first_name: '',
+              user_profile: '',
+              persona: '',
+              tone: '',
+              voice: '',
+            }}
+            onSubmit={handleGenerate}
+            buttonText="Generate Public Speech 🚀"
+            formTitle="Generate a Public Speech"
+            instructions={
+              <p>
+                Ready to share some motivation with the world? Here's how to craft a public speech that resonates:
+                <ol className="list-decimal list-inside mt-2">
+                  <li><strong>First Name:</strong> Add your name to make the speech authentically yours.</li>
+                  <li><strong>User Profile:</strong> Let us understand your background to personalize your message.</li>
+                  <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
+                  <li><strong>Voice:</strong> Select a voice that best conveys your motivational energy.</li>
+                </ol>
+                Hit "Generate Public Speech" and inspire your audience! ✨
+              </p>
+            }
+          />
         </div>
       ) : (
         <div className="mt-8 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">

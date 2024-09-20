@@ -1,25 +1,16 @@
-// frontend/src/components/MySpeeches.js
+// src/components/MySpeeches.js
 import React, { useEffect, useState, useContext } from 'react';
+import SpeechForm from './SpeechForm'; // New import
 import API from '../api';
 import { handleError } from '../utils/errorHandler';
 import { AuthContext } from '../context/AuthContext';
-import { personas } from '../personas';
 
 function MySpeeches() {
   const { user } = useContext(AuthContext);
   const [speeches, setSpeeches] = useState([]);
-  const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const [formData, setFormData] = useState({
-    first_name: user.first_name || '',
-    user_profile: user.user_profile || '',
-    persona: user.preferences?.persona || '',
-    tone: user.preferences?.tone || '',
-    voice: user.preferences?.voice || '',
-  });
-  const [voicesList, setVoicesList] = useState([]);
 
   useEffect(() => {
     const fetchMySpeeches = async () => {
@@ -32,59 +23,23 @@ function MySpeeches() {
       }
     };
 
-    const fetchVoices = async () => {
-      try {
-        const response = await API.get('/voices/');
-        setVoicesList(response.data.voices);
-      } catch (error) {
-        handleError(error);
-        setError('Failed to load available voices.');
-      }
-    };
 
-    fetchMySpeeches();
-    fetchVoices();
-  }, []);
-
-  const handleGenerate = async (e) => {
-    e.preventDefault();
-    setGenerating(true);
+  /**
+   * Handles the submission of the speech form.
+   * @param {Object} formData - The data from the SpeechForm.
+   */
+  const handleGenerate = async (formData) => {
     setError('');
     setMessage('');
     try {
       const response = await API.post('/generate_speech', formData);
       setMessage('Speech generated successfully! 🚀');
-      setFormData({
-        ...formData,
-        first_name: user.first_name, // Assuming first name is not changing
-        user_profile: user.user_profile,
-        persona: user.preferences?.persona || '',
-        tone: user.preferences?.tone || '',
-        voice: user.preferences?.voice || '',
-      });
       // Fetch updated speeches
       const speechesResponse = await API.get('/my_speeches/');
       setSpeeches(speechesResponse.data);
     } catch (error) {
       handleError(error);
       setError('An error occurred while generating the speech.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  /**
-   * Handles persona selection and updates the corresponding tone.
-   * @param {string} personaName - The selected persona name.
-   */
-  const handlePersonaSelect = (personaName) => {
-    const selected = personas.find(p => p.name === personaName);
-    if (selected) {
-      setFormData({
-        ...formData,
-        persona: selected.name,
-        tone: selected.tone,
-      });
     }
   };
 
@@ -147,65 +102,30 @@ function MySpeeches() {
       )}
 
       {/* Generate New Speech Form */}
-      <div className="mt-8">
-        <h2 className="text-3xl font-bold mb-4">Generate a New Speech</h2>
-        <form onSubmit={handleGenerate} className="grid grid-cols-1 gap-4">
-          <input
-            type="text"
-            placeholder="🚀 Your First Name"
-            className="input input-bordered w-full"
-            value={formData.first_name}
-            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-            required
-          />
-          <textarea
-            placeholder="📝 Tell us about yourself..."
-            className="textarea textarea-bordered w-full"
-            value={formData.user_profile}
-            onChange={(e) => setFormData({ ...formData, user_profile: e.target.value })}
-            rows={4}
-          ></textarea>
-
-          <PersonaSelection selectedPersona={formData.persona} onSelectPersona={handlePersonaSelect} />
-
-          <input
-            type="text"
-            placeholder="🎤 Persona Name (e.g., Coach Carter)"
-            className="input input-bordered w-full"
-            value={formData.persona}
-            onChange={(e) => setFormData({ ...formData, persona: e.target.value })}
-            required
-          />
-          <textarea
-            placeholder="🗣️ Tone Description (e.g., Energetic and Persuasive)"
-            className="textarea textarea-bordered w-full"
-            value={formData.tone}
-            onChange={(e) => setFormData({ ...formData, tone: e.target.value })}
-            rows={4}
-            required
-          ></textarea>
-          <select
-            className="select select-bordered w-full"
-            value={formData.voice}
-            onChange={(e) => setFormData({ ...formData, voice: e.target.value })}
-            required
-          >
-            <option value="">🎤 Select a Voice</option>
-            {voicesList.map(voice => (
-              <option key={voice} value={voice}>
-                {voice}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className={`btn btn-primary ${generating ? 'loading' : ''}`}
-            disabled={generating}
-          >
-            {generating ? 'Cranking Up the Energy...' : 'Generate Your Boost! 🚀'}
-          </button>
-        </form>
-      </div>
+      <SpeechForm
+        initialData={{
+          first_name: user.first_name || '',
+          user_profile: user.user_profile || '',
+          persona: user.preferences?.persona || '',
+          tone: user.preferences?.tone || '',
+          voice: user.preferences?.voice || '',
+        }}
+        onSubmit={handleGenerate}
+        buttonText="Generate Your Boost! 🚀"
+        formTitle="Generate a New Speech"
+        instructions={
+          <p>
+            Hey, superstar! Ready to craft your next motivational masterpiece? Here's how:
+            <ol className="list-decimal list-inside mt-2">
+              <li><strong>First Name:</strong> Personalize your speech by adding your name.</li>
+              <li><strong>User Profile:</strong> Give us a glimpse into who you are to tailor the speech.</li>
+              <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
+              <li><strong>Voice:</strong> Choose a voice that pumps you up the most.</li>
+            </ol>
+            Once you're set, hit that "Generate Speech" button and watch the magic happen! ✨
+          </p>
+        }
+      />
     </div>
   );
 }
