@@ -93,7 +93,7 @@ function MySpeeches() {
                   </svg>
                 </summary>
                 <div className="p-4">
-                  <pre className="mb-2">{speech.speech_text}</pre>
+                  <p className="mb-2" dangerouslySetInnerHTML={{ __html: speech.speech_text.replace(/\n/g, '<br />') }} />
                   {speech.speech_url && (
                     <audio controls src={speech.speech_url} className="w-full mt-2"></audio>
                   )}

@@ -5,7 +5,7 @@ import PublicSpeeches from './PublicSpeeches';
 
 function LandingPage() {
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gradient-to-r from-blue-500 to-green-400 text-white px-4 py-8">
+    <div className="flex flex-col items-center justify-start min-h-screen text-black px-4 py-8">
       {/* Logo and Tagline */}
       <div className="text-center mb-8">
         <h1 className="text-5xl font-bold mb-4">AlgorithmSpeaks</h1>
