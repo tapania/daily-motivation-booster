@@ -99,7 +99,7 @@ function PreferencesForm() {
       await API.patch('/preferences/', preferences);
       // Update schedule
       await API.post('/schedule/', schedule);
-      setMessage('Preferences saved successfully!');
+      setMessage('Preferences saved successfully! 🎉');
     } catch (error) {
       handleError(error);
       setError('An error occurred while saving your preferences.');
@@ -111,16 +111,16 @@ function PreferencesForm() {
    * Handles persona selection and updates the corresponding tone.
    * @param {string} personaName - The selected persona name.
    */
-  const handlePersonaSelect = (personaName) => {
-    const selected = personas.find(p => p.name === personaName);
-    if (selected) {
-      setPreferences({
-        ...preferences,
-        persona: selected.name,
-        tone: selected.tone,
-      });
-    }
-  };
+    const handlePersonaSelect = (personaName) => {
+      const selected = personas.find(p => p.name === personaName);
+      if (selected) {
+        setPreferences({
+          ...preferences,
+          persona: selected.name,
+          tone: selected.tone,
+        });
+      }
+    };
 
   if (!user) {
     return <div className="text-center mt-10">Loading user information...</div>;
@@ -128,32 +128,54 @@ function PreferencesForm() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-4">
-      {/* Display Error Message */}
+      {/* Error Message */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
-      {/* Display Success Message */}
+      {/* Success Message */}
       {message && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
           {message}
         </div>
       )}
 
+      {/* Instructions Pane */}
+      <div className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box">
+        <input type="checkbox" />
+        <div className="collapse-title text-xl font-medium">
+          Need Help Filling Out Your Preferences?
+        </div>
+        <div className="collapse-content">
+          <p className="mt-2">
+            Hey there! Let's fine-tune your motivational engine. Fill out the following sections to personalize your experience:
+          </p>
+          <ul className="list-disc list-inside mt-2">
+            <li><strong>First Name:</strong> Let us address you by name for that personal touch.</li>
+            <li><strong>User Profile:</strong> Share a bit about yourself to tailor the speeches just for you.</li>
+            <li><strong>Timezone:</strong> Set your timezone to schedule speeches at the perfect moment.</li>
+            <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style. Or choose from list of existing ones.</li>
+            <li><strong>Voice:</strong> Select a voice that motivates you the most.</li>
+            <li><strong>Schedule:</strong> Plan when you want your motivational boosts to arrive.</li>
+          </ul>
+          <p className="mt-2">Ready to boost your ambitions? Let’s dive in! 🚀</p>
+        </div>
+      </div>
+
       {/* User Information Section */}
-      <h2 className="text-2xl font-bold mb-4">User Information</h2>
+      <h2 className="text-3xl font-bold mb-4 mt-6">User Information</h2>
       <div className="grid grid-cols-1 gap-4">
         <input
           type="text"
-          placeholder="First Name"
+          placeholder="🚀 Your First Name"
           className="input input-bordered w-full"
           value={preferences.first_name}
           onChange={e => setPreferences({ ...preferences, first_name: e.target.value })}
           required
         />
         <textarea
-          placeholder="User Profile"
+          placeholder="📝 Tell us about yourself..."
           className="textarea textarea-bordered w-full"
           value={preferences.user_profile}
           onChange={e => setPreferences({ ...preferences, user_profile: e.target.value })}
@@ -165,7 +187,7 @@ function PreferencesForm() {
           onChange={e => setPreferences({ ...preferences, timezone: e.target.value })}
           required
         >
-          <option value="">Select Timezone</option>
+          <option value="">⌚ Choose Your Timezone</option>
           {timezones.map(tz => (
             <option key={tz} value={tz}>
               {tz}
@@ -174,37 +196,37 @@ function PreferencesForm() {
         </select>
       </div>
 
-      {/* Persona Selection Section */}
-      <h2 className="text-2xl font-bold mt-8 mb-4">Select Persona</h2>
+      {/* Persona and Tone Section */}
+      <h2 className="text-3xl font-bold mt-8 mb-4">Your Motivational Persona</h2>
       <PersonaSelection selectedPersona={preferences.persona} onSelectPersona={handlePersonaSelect} />
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-1 gap-4">
         <input
           type="text"
-          placeholder="Persona Name"
+          placeholder="🎤 Persona Name (e.g., Coach Carter)"
           className="input input-bordered w-full"
           value={preferences.persona}
           onChange={e => setPreferences({ ...preferences, persona: e.target.value })}
           required
         />
-        <input
-          type="text"
-          placeholder="Tone"
-          className="input input-bordered w-full"
+        <textarea
+          placeholder="🗣️ Tone Description (e.g., Energetic and Persuasive)"
+          className="textarea textarea-bordered w-full"
           value={preferences.tone}
           onChange={e => setPreferences({ ...preferences, tone: e.target.value })}
+          rows={4}
           required
-        />
+        ></textarea>
       </div>
 
       {/* Voice Selection Section */}
-      <h2 className="text-2xl font-bold mt-8 mb-4">Select Voice</h2>
+      <h2 className="text-3xl font-bold mt-8 mb-4">Choose Your Motivational Voice</h2>
       <VoiceSelection
         selectedVoice={preferences.voice}
         setSelectedVoice={(voice) => setPreferences({ ...preferences, voice })}
       />
 
       {/* Schedule Form Section */}
-      <h2 className="text-2xl font-bold mt-8 mb-4">Set Schedule</h2>
+      <h2 className="text-3xl font-bold mt-8 mb-4">Set Your Motivation Schedule</h2>
       <ScheduleForm schedule={schedule} setSchedule={setSchedule} />
       {/* Display Schedule Errors if Any */}
       {Object.keys(scheduleErrors).length > 0 && (
@@ -215,7 +237,7 @@ function PreferencesForm() {
 
       {/* Submit Button */}
       <button type="submit" className="btn btn-primary mt-8 w-full">
-        Save Preferences
+        Save Preferences 🛠️
       </button>
     </form>
   );

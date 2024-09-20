@@ -9,9 +9,12 @@ function Header() {
 
   return (
     <header className="bg-blue-600 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-xl font-bold">Motivational Speech App</h1>
-        <nav>
+      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
+        <div className="flex flex-col items-center md:items-start">
+          <h1 className="text-xl font-bold">Algorithm Speaks</h1>
+          <p className="text-sm italic">Motivational Speeches on Demand</p>
+        </div>
+        <nav className="mt-2 md:mt-0">
           <ul className="flex space-x-4">
             <li>
               <Link
@@ -43,7 +46,7 @@ function Header() {
             )}
           </ul>
         </nav>
-        <div>
+        <div className="mt-2 md:mt-0">
           {isAuthenticated ? (
             <button
               onClick={logout}
