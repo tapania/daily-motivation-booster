@@ -1,5 +1,5 @@
 # backend/main.py
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Path
 from fastapi.responses import JSONResponse
 from typing import Optional, List
 from sqlalchemy.orm import Session
