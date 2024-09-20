@@ -87,27 +87,6 @@ function PublicSpeeches() {
       {/* Generate New Public Speech Form - Visible Only to Authenticated Users */}
       {isAuthenticated ? (
         <div className="mt-8">
-
-          {/* Instructions Pane */}
-          <div className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box mb-6">
-            <input type="checkbox" />
-            <div className="collapse-title text-xl font-medium">
-              Want to Create a Public Speech? Click Here for Instructions.
-            </div>
-            <div className="collapse-content">
-              <p className="mt-2">
-                Ready to share some motivation with the world? Here's how to craft a public speech that resonates:
-              </p>
-              <ol className="list-decimal list-inside mt-2">
-                <li><strong>First Name:</strong> Add your name to make the speech authentically yours.</li>
-                <li><strong>User Profile:</strong> Let us understand your background to personalize your message.</li>
-                <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
-                <li><strong>Voice:</strong> Select a voice that best conveys your motivational energy.</li>
-              </ol>
-              <p className="mt-2">Hit "Generate Public Speech" and inspire your audience! ✨</p>
-            </div>
-          </div>
-
           <SpeechForm
             initialData={{
               first_name: '',

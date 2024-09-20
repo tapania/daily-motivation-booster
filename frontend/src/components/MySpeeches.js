@@ -59,26 +59,6 @@ function MySpeeches() {
     <div className="mt-8">
       <h2 className="text-3xl font-bold mb-4">Your Personal Speeches</h2>
 
-      {/* Instructions Pane */}
-      <div className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box mb-6">
-        <input type="checkbox" />
-        <div className="collapse-title text-xl font-medium">
-          Need a Hand Generating Your Speech?
-        </div>
-        <div className="collapse-content">
-          <p className="mt-2">
-            Hey, superstar! Ready to craft your next motivational masterpiece? Here's how:
-          </p>
-          <ol className="list-decimal list-inside mt-2">
-            <li><strong>First Name:</strong> Personalize your speech by adding your name.</li>
-            <li><strong>User Profile:</strong> Give us a glimpse into who you are to tailor the speech.</li>
-            <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
-            <li><strong>Voice:</strong> Choose a voice that pumps you up the most.</li>
-          </ol>
-          <p className="mt-2">Once you're set, hit that "Generate Speech" button and watch the magic happen! ✨</p>
-        </div>
-      </div>
-
       {/* Display Error Message */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -126,7 +106,7 @@ function MySpeeches() {
             Hey, superstar! Ready to craft your next motivational masterpiece? Here's how:
             <ol className="list-decimal list-inside mt-2">
               <li><strong>First Name:</strong> Personalize your speech by adding your name.</li>
-              <li><strong>User Profile:</strong> Give us a glimpse into who you are to tailor the speech.</li>
+              <li><strong>User Profile:</strong> Give us a glimpse into who you are to tailor the speech. You can use <a href="https://copilot.microsoft.com" target="_blank">Copilot</a> to create the profile for you.</li>
               <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
               <li><strong>Voice:</strong> Choose a voice that pumps you up the most.</li>
             </ol>

@@ -153,7 +153,7 @@ function PreferencesForm() {
           </p>
           <ul className="list-disc list-inside mt-2">
             <li><strong>First Name:</strong> Let us address you by name for that personal touch.</li>
-            <li><strong>User Profile:</strong> Share a bit about yourself to tailor the speeches just for you.</li>
+            <li><strong>User Profile:</strong> Share a bit about yourself to tailor the speeches just for you. You can use <a href="https://copilot.microsoft.com" target="_blank">Copilot</a> to create the profile for you.</li>
             <li><strong>Timezone:</strong> Set your timezone to schedule speeches at the perfect moment.</li>
             <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style. Or choose from list of existing ones.</li>
             <li><strong>Voice:</strong> Select a voice that motivates you the most.</li>
@@ -198,8 +198,9 @@ function PreferencesForm() {
 
       {/* Persona and Tone Section */}
       <h2 className="text-3xl font-bold mt-8 mb-4">Your Motivational Persona</h2>
-      <PersonaSelection selectedPersona={preferences.persona} onSelectPersona={handlePersonaSelect} />
       <div className="grid grid-cols-1 gap-4">
+        <PersonaSelection selectedPersona={preferences.persona} onSelectPersona={handlePersonaSelect} />
+
         <input
           type="text"
           placeholder="🎤 Persona Name (e.g., Coach Carter)"

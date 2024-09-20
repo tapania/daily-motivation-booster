@@ -7,6 +7,7 @@ import MySpeeches from './components/MySpeeches';
 import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
 import Header from './components/Header';
+import LandingPage from './components/LandingPage'; // Import LandingPage
 import { AuthContext } from './context/AuthContext';
 import { handleError } from './utils/errorHandler';
 import API, { setLogoutFunction } from './api';
@@ -32,7 +33,13 @@ function App() {
           <Header isAuthenticated={isAuthenticated} handleLogout={logout} />
           <div className="container mx-auto px-4 flex-grow">
             <Routes>
-              <Route path="/" element={<PublicSpeeches />} />
+              {/* Root Path: LandingPage for unauthenticated, PublicSpeeches for authenticated */}
+              <Route
+                path="/"
+                element={
+                  isAuthenticated ? <PublicSpeeches /> : <LandingPage />
+                }
+              />
               <Route
                 path="/my_speeches"
                 element={
