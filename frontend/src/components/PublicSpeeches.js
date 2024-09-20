@@ -92,16 +92,10 @@ function PublicSpeeches() {
                   </svg>
                 </summary>
                 <div className="p-4">
-                  <p className="mb-2">{speech.speech_text}</p>
+                  <pre className="mb-2">{speech.speech_text}</pre>
                   {speech.speech_url && (
                     <audio controls src={speech.speech_url} className="w-full mt-2"></audio>
                   )}
-                  <Link
-                    to={`/public_speeches/${speech.id}`}
-                    className="text-blue-500 underline mt-2 inline-block"
-                  >
-                    View Details
-                  </Link>
                 </div>
               </details>
             </div>
