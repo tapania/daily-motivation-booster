@@ -12,7 +12,7 @@ function PersonaSelection({ selectedPersona, onSelectPersona }) {
       <option value="">Select a Persona</option>
       {personas.map(persona => (
         <option key={persona.name} value={persona.name}>
-          {persona.name} - {persona.tone}
+          {persona.name} - {persona.tone.length > 50 ? persona.tone.substring(0, 50) + '...' : persona.tone}
         </option>
       ))}
     </select>

@@ -7,7 +7,8 @@ import MySpeeches from './components/MySpeeches';
 import ErrorBoundary from './components/ErrorBoundary';
 import Footer from './components/Footer';
 import Header from './components/Header';
-import LandingPage from './components/LandingPage'; // Import LandingPage
+import LandingPage from './components/LandingPage';
+import SpeechDetail from './components/SpeechDetail';
 import { AuthContext } from './context/AuthContext';
 import { handleError } from './utils/errorHandler';
 import API, { setLogoutFunction } from './api';
@@ -41,10 +42,28 @@ function App() {
                 }
               />
               <Route
+                path="/public_speeches"
+                element={<PublicSpeeches />}
+              />
+              <Route
+                path="/public_speeches/:id"
+                element={<SpeechDetail type="public" />}
+              />
+              <Route
                 path="/my_speeches"
                 element={
                   isAuthenticated ? (
-                    <MySpeeches user={user} />
+                    <MySpeeches />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+              <Route
+                path="/my_speeches/:id"
+                element={
+                  isAuthenticated ? (
+                    <SpeechDetail type="private" />
                   ) : (
                     <Navigate to="/" replace />
                   )

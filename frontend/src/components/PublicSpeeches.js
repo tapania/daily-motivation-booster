@@ -1,9 +1,10 @@
 // src/components/PublicSpeeches.js
 import React, { useEffect, useState, useContext } from 'react';
-import SpeechForm from './SpeechForm'; // New import
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import API from '../api';
 import { handleError } from '../utils/errorHandler';
 import { AuthContext } from '../context/AuthContext';
+import SpeechForm from './SpeechForm'; // Ensure SpeechForm is imported
 import { personas } from '../personas';
 
 function PublicSpeeches() {
@@ -11,7 +12,7 @@ function PublicSpeeches() {
   const [speeches, setSpeeches] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true); // New loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch public speeches
@@ -23,12 +24,12 @@ function PublicSpeeches() {
         handleError(error);
         setError('Failed to load public speeches.');
       } finally {
-        setLoading(false); // Set loading to false after fetch
+        setLoading(false);
       }
     };
 
-    fetchPublicSpeeches(); // Invoke the fetch function
-  }, []); // Added missing closing brackets and dependency array
+    fetchPublicSpeeches();
+  }, []);
 
   /**
    * Handles the submission of the public speech form.
@@ -49,7 +50,7 @@ function PublicSpeeches() {
     }
   };
 
-  if (loading) { // Conditional rendering based on loading state
+  if (loading) {
     return <div className="text-center mt-10">Loading public speeches...</div>;
   }
 
@@ -70,18 +71,42 @@ function PublicSpeeches() {
         </div>
       )}
 
-      {/* Speeches List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {speeches.map(speech => (
-          <div key={speech.id} className="card shadow-md p-4">
-            <h3 className="font-bold mb-2">
-              {speech.speech_text.length > 50
-                ? `${speech.speech_text.substring(0, 50)}...`
-                : speech.speech_text}
-            </h3>
-            <audio controls src={speech.speech_url} className="w-full mt-2"></audio>
-          </div>
-        ))}
+      {/* Speeches List with Collapsible Panels */}
+      <div className="space-y-4">
+        {speeches.length === 0 ? (
+          <p>No public speeches available at the moment.</p>
+        ) : (
+          speeches.map(speech => (
+            <div key={speech.id} className="border rounded-lg">
+              <details className="group">
+                <summary className="flex justify-between items-center p-4 cursor-pointer bg-gray-100">
+                  <span className="font-semibold">{speech.title || `${speech.speech_text.substring(0, 50)}...`}</span>
+                  <svg
+                    className="w-5 h-5 transition-transform duration-200 transform group-open:rotate-180"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </summary>
+                <div className="p-4">
+                  <p className="mb-2">{speech.speech_text}</p>
+                  {speech.speech_url && (
+                    <audio controls src={speech.speech_url} className="w-full mt-2"></audio>
+                  )}
+                  <Link
+                    to={`/public_speeches/${speech.id}`}
+                    className="text-blue-500 underline mt-2 inline-block"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </details>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Generate New Public Speech Form - Visible Only to Authenticated Users */}

@@ -1,11 +1,14 @@
 // frontend/src/components/Header.js
 import React, { useContext } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom'; 
 import { AuthContext } from '../context/AuthContext';
 
 function Header() {
   const { isAuthenticated, logout } = useContext(AuthContext);
   const location = useLocation();
+
+  const linkClass = ({ isActive }) =>
+    `hover:underline ${isActive ? 'underline font-semibold' : ''}`;
 
   return (
     <header className="bg-blue-600 text-white p-4">
@@ -18,28 +21,19 @@ function Header() {
           <nav className="mt-2 md:mt-0">
             <ul className="flex space-x-4">
               <li>
-                <Link
-                  to="/"
-                  className={`hover:underline ${location.pathname === '/' ? 'underline' : ''}`}
-                >
+                <NavLink to="/public_speeches" className={linkClass}>
                   Public Speeches
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  to="/my_speeches"
-                  className={`hover:underline ${location.pathname === '/my_speeches' ? 'underline' : ''}`}
-                >
+                <NavLink to="/my_speeches" className={linkClass}>
                   My Speeches
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
-                  to="/settings"
-                  className={`hover:underline ${location.pathname === '/settings' ? 'underline' : ''}`}
-                >
+                <NavLink to="/settings" className={linkClass}>
                   Settings
-                </Link>
+                </NavLink>
               </li>
             </ul>
           </nav>

@@ -1,6 +1,7 @@
 // src/components/MySpeeches.js
 import React, { useEffect, useState, useContext } from 'react';
-import SpeechForm from './SpeechForm'; // New import
+import { Link } from 'react-router-dom';
+import SpeechForm from './SpeechForm';
 import API from '../api';
 import { handleError } from '../utils/errorHandler';
 import { AuthContext } from '../context/AuthContext';
@@ -10,7 +11,7 @@ function MySpeeches() {
   const [speeches, setSpeeches] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true); // New loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMySpeeches = async () => {
@@ -21,7 +22,7 @@ function MySpeeches() {
         handleError(error);
         setError('Failed to load your speeches.');
       } finally {
-        setLoading(false); // Set loading to false after fetch
+        setLoading(false);
       }
     };
 
@@ -51,8 +52,8 @@ function MySpeeches() {
     return <div className="text-center mt-10">Loading user information...</div>;
   }
 
-  if (loading) { // Conditional rendering based on loading state
-    return <div className="text-center mt-10">Loading speeches...</div>;
+  if (loading) {
+    return <div className="text-center mt-10">Loading your speeches...</div>;
   }
 
   return (
@@ -71,23 +72,43 @@ function MySpeeches() {
           {message}
         </div>
       )}
-      {/* Speeches List */}
-      {speeches.length === 0 ? (
-        <p>You haven't generated any speeches yet. Let's create one! 🎤</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {speeches.map((speech) => (
-            <div key={speech.id} className="card shadow-md p-4">
-              <h3 className="font-bold mb-2">
-                {speech.speech_text.length > 50
-                  ? `${speech.speech_text.substring(0, 50)}...`
-                  : speech.speech_text}
-              </h3>
-              <audio controls src={speech.speech_url} className="w-full mt-2"></audio>
+      {/* Speeches List with Collapsible Panels */}
+      <div className="space-y-4">
+        {speeches.length === 0 ? (
+          <p>You haven't generated any speeches yet. Let's create one! 🎤</p>
+        ) : (
+          speeches.map((speech) => (
+            <div key={speech.id} className="border rounded-lg">
+              <details className="group">
+                <summary className="flex justify-between items-center p-4 cursor-pointer bg-gray-100">
+                  <span className="font-semibold">{speech.title || `${speech.speech_text.substring(0, 50)}...`}</span>
+                  <svg
+                    className="w-5 h-5 transition-transform duration-200 transform group-open:rotate-180"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </summary>
+                <div className="p-4">
+                  <p className="mb-2">{speech.speech_text}</p>
+                  {speech.speech_url && (
+                    <audio controls src={speech.speech_url} className="w-full mt-2"></audio>
+                  )}
+                  <Link
+                    to={`/my_speeches/${speech.id}`}
+                    className="text-blue-500 underline mt-2 inline-block"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </details>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {/* Generate New Speech Form */}
       <SpeechForm
@@ -106,7 +127,7 @@ function MySpeeches() {
             Hey, superstar! Ready to craft your next motivational masterpiece? Here's how:
             <ol className="list-decimal list-inside mt-2">
               <li><strong>First Name:</strong> Personalize your speech by adding your name.</li>
-              <li><strong>User Profile:</strong> Give us a glimpse into who you are to tailor the speech. You can use <a href="https://copilot.microsoft.com" target="_blank">Copilot</a> to create the profile for you.</li>
+              <li><strong>User Profile:</strong> Give us a glimpse into who you are to tailor the speech. You can use <a href="https://copilot.microsoft.com" target="_blank" rel="noopener noreferrer">Copilot</a> to create the profile for you.</li>
               <li><strong>Persona & Tone:</strong> Enter the name of your motivational speaker and describe their unique style.</li>
               <li><strong>Voice:</strong> Choose a voice that pumps you up the most.</li>
             </ol>

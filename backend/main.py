@@ -263,6 +263,35 @@ def get_my_speeches(db: Session = Depends(get_db), user: User = Depends(get_curr
         logging.error(f"Error fetching user speeches: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+@app.get("/public_speeches/{speech_id}/", response_model=GeneratedSpeechSchema)
+def get_public_speech(
+    speech_id: int = Path(..., description="The ID of the public speech to retrieve"),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve a single public speech by its ID.
+    Public speeches have user_id set to None.
+    """
+    speech = db.query(GeneratedSpeech).filter(GeneratedSpeech.id == speech_id, GeneratedSpeech.user_id == None).first()
+    if not speech:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Public speech not found")
+    return speech
+
+@app.get("/my_speeches/{speech_id}/", response_model=GeneratedSpeechSchema)
+def get_my_speech(
+    speech_id: int = Path(..., description="The ID of the user's speech to retrieve"),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Retrieve a single speech belonging to the authenticated user by its ID.
+    """
+    speech = db.query(GeneratedSpeech).filter(GeneratedSpeech.id == speech_id, GeneratedSpeech.user_id == user.id).first()
+    if not speech:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Speech not found")
+    return speech
+
 # New Endpoints for Schedule Management
 
 @app.post("/schedule/", response_model=List[ScheduleSchema], status_code=status.HTTP_201_CREATED)
