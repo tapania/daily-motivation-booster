@@ -10,7 +10,7 @@ function MySpeeches() {
   const [speeches, setSpeeches] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
+  const [loading, setLoading] = useState(true); // New loading state
 
   useEffect(() => {
     const fetchMySpeeches = async () => {
@@ -20,9 +20,13 @@ function MySpeeches() {
       } catch (error) {
         handleError(error);
         setError('Failed to load your speeches.');
+      } finally {
+        setLoading(false); // Set loading to false after fetch
       }
     };
 
+    fetchMySpeeches();
+  }, []);
 
   /**
    * Handles the submission of the speech form.
@@ -45,6 +49,10 @@ function MySpeeches() {
 
   if (!user) {
     return <div className="text-center mt-10">Loading user information...</div>;
+  }
+
+  if (loading) { // Conditional rendering based on loading state
+    return <div className="text-center mt-10">Loading speeches...</div>;
   }
 
   return (
