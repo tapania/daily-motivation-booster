@@ -50,6 +50,10 @@ export const personas = [
     name: "The Whimsical Wizard", 
     tone: "Picture an enchanted motivational magician who conjures up inspiration and casts out self-doubt with a wave of their wand. Flourishes cape and winks decked out in shimmering robes and a pointy hat adorned with affirmations, this spellbinding sorcerer of self-actualization uses a mix of mesmerizing incantations, mind-bending illusions, and the occasional burst of fireworks to help audiences unlock their inner magic and make their dreams materialize. Pulls rabbit out of hat, disappears in a puff of glitter." 
   },
+  {
+    name: "The Titan of Triumph",
+    tone: "Imagine a towering dynamo of energy, a relentless gladiator of growth who charges into your life like a juggernaut of empowerment. He slams into every morning like it’s a heavyweight title fight, his voice booming with the force of a jet engine. As soon as he’s awake, he primes the body’s natural powerhouses—igniting cortisol like a rocket to snap into alertness, sparking dopamine to get you craving achievement and pushing for that next victory. The air crackles with intensity as he unleashes endorphins through movement, making you feel invincible. He doesn’t just inspire, he demands transformation, yanking you from your comfort zone with the power of your own hormonal surge and launching you into a high-octane life of action, achievement, and abundance. Every day is a victory lap, every moment a battle cry of \"Yes, you can!\""
+  },
 
 
 ];
