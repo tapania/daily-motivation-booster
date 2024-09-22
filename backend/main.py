@@ -33,7 +33,7 @@ from email_utils import send_email
 from fastapi.middleware.cors import CORSMiddleware
 
 # Azure OpenAI and Speech imports
-from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer, ResultReason
+from azure.cognitiveservices.speech import SpeechConfig, SpeechSynthesizer, ResultReason, SpeechSynthesisOutputFormat
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 from openai import AzureOpenAI
 
@@ -149,9 +149,10 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
 
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=AZURE_SPEECH_SUBSCRIPTION_KEY, region=AZURE_SPEECH_REGION)
+        speech_config.set_speech_synthesis_output_format(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3)
         speech_config.speech_synthesis_voice_name = f"en-US-{speech_request.voice}Neural"
         timestamp = datetime.datetime.now().isoformat().replace(":", "-")
-        filename = f"speech_{sanitize_filename(speech_request.first_name)}_{timestamp}.wav"
+        filename = f"speech_{sanitize_filename(speech_request.first_name)}_{timestamp}.mp3"
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
@@ -211,9 +212,10 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
 
         # Convert text to speech using Azure TTS
         speech_config = SpeechConfig(subscription=AZURE_SPEECH_SUBSCRIPTION_KEY, region=AZURE_SPEECH_REGION)
+        speech_config.set_speech_synthesis_output_format(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3)
         speech_config.speech_synthesis_voice_name = f"en-US-{speech_request.voice}Neural"
         timestamp = datetime.datetime.now().isoformat().replace(":", "-")
-        filename = f"speech_public_{sanitize_filename(speech_request.first_name)}_{timestamp}.wav"
+        filename = f"speech_public_{sanitize_filename(speech_request.first_name)}_{timestamp}.mp3"
         audio_config = AudioOutputConfig(filename=filename)
         synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()

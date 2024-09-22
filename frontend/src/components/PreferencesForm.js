@@ -25,26 +25,33 @@ function PreferencesForm() {
   const [scheduleErrors, setScheduleErrors] = useState({});
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndSchedule = async () => {
       try {
-        const response = await API.get('/me');
-        setUser(response.data);
+        const userResponse = await API.get('/me');
+        setUser(userResponse.data);
         setPreferences({
-          first_name: response.data.first_name || '',
-          user_profile: response.data.user_profile || '',
-          timezone: response.data.timezone || '',
-          persona: response.data.preferences?.persona || '',
-          tone: response.data.preferences?.tone || '',
-          voice: response.data.preferences?.voice || '',
+          first_name: userResponse.data.first_name || '',
+          user_profile: userResponse.data.user_profile || '',
+          timezone: userResponse.data.timezone || '',
+          persona: userResponse.data.preferences?.persona || '',
+          tone: userResponse.data.preferences?.tone || '',
+          voice: userResponse.data.preferences?.voice || '',
         });
+        // Fetch schedule
+        const scheduleResponse = await API.get('/schedule/');
+        const scheduleData = scheduleResponse.data.map(s => ({
+          day_of_week: s.day_of_week,
+          time_of_day: s.time_of_day.substring(0, 5), // Extract 'HH:MM' from 'HH:MM:SS'
+        }));
+        setSchedule(scheduleData);
       } catch (error) {
         handleError(error);
-        setError('Failed to load user information.');
+        setError('Failed to load user information and schedule.');
       }
     };
-
-    fetchUser();
+    fetchUserAndSchedule();
   }, []);
+    
 
   /**
    * Validates the schedule before submission.
@@ -69,7 +76,7 @@ function PreferencesForm() {
       if (!validDays.includes(s.day_of_week)) {
         newErrors[s.day_of_week] = 'Invalid day selected.';
       }
-      if (!s.time_of_day || !/^\d{2}:\d{2}$/.test(s.time_of_day)) {
+      if (!s.time_of_day) {
         newErrors[s.day_of_week] = 'Invalid or missing time.';
       }
     });

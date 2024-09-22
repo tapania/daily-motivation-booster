@@ -17,7 +17,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 SPEECH_KEY = os.getenv('AZURE_SPEECH_SUBSCRIPTION_KEY')
-SPEECH_REGION = os.getenv('AZURE_SERVICE_REGION')
+SPEECH_REGION = os.getenv('AZURE_SPEECH_REGION')
 SAS_URL = os.getenv('AZURE_CONTAINER_SAS_URL')
 
 # Initialize logging
@@ -52,9 +52,10 @@ async def generate_speech(user, preferences, db):
 
         # Convert text to speech using Azure TTS
         speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
-        speech_config.speech_synthesis_voice_name = preferences.voice
-        filename = f"speech_{user.id}_{datetime.datetime.now().isoformat()}.wav"
-        audio_config = speechsdk.AudioOutputConfig(filename=filename)
+        speech_config.speech_synthesis_voice_name = f"en-US-{preferences.voice.value}Neural"
+        speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3)
+        filename = f"speech_{user.id}_{datetime.datetime.now().isoformat()}.mp3"
+        audio_config = speechsdk.audio.AudioOutputConfig(filename=filename)
         synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = synthesizer.speak_text_async(speech_text).get()
         if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
@@ -75,9 +76,13 @@ async def generate_speech(user, preferences, db):
             speech_url=url
         )
         db.add(generated_speech)
+        db.commit()
 
         # Send email to user
-        send_email(user.email, "Your Motivational Speech", "Please find your motivational speech attached.", [filename])
+        subject = "Your Motivational Speech"
+        body = "Here's your motivational speech for today:\n\n" + speech_text
+        attachments = [filename]
+        send_email(user.email, subject, body, url, attachments)
 
         # Clean up the audio file
         os.remove(filename)
@@ -100,7 +105,7 @@ def main():
         schedules = db.query(Schedule).filter(Schedule.user_id == user.id).all()
         for schedule in schedules:
             if user_time.strftime('%A') == schedule.day_of_week:
-                if user_time.time().hour == schedule.time_of_day.hour and user_time.time().minute == schedule.time_of_day.minute:
+                if user_time.time().hour == schedule.time_of_day.hour:
                     preferences = db.query(Preference).filter(Preference.user_id == user.id).first()
                     if preferences:
                         asyncio.run(generate_speech(user, preferences, db))
