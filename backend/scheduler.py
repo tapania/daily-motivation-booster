@@ -27,7 +27,7 @@ def generate_prompt(user, preferences):
     system_prompt = f"You are speaking to {user.first_name}"
     if user.user_profile:
         system_prompt += f", whose motivational profile is:\n{user.user_profile}\n"
-    system_prompt += f"\nYou are a motivational coach with the following profile:\n{preferences.persona}:{preferences.tone}\n."
+    system_prompt += f"\nYou are a motivational coach with the following profile:\n{preferences.persona}:{preferences.tone}\n\nYou reply only in plain text.\nDon't use markdown."
     prompt = f"\nPlease write a motivational speech for {user.first_name} in the {preferences.persona} style and focus on using the correct triggers from {user.first_name}'s profile to target the speech for just him/her."
 
     return [
@@ -49,6 +49,7 @@ async def generate_speech(user, preferences, db):
             messages=generate_prompt(user, preferences)
         )
         speech_text = response.choices[0].message.content
+        
 
         # Convert text to speech using Azure TTS
         speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)

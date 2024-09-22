@@ -128,7 +128,7 @@ async def generate_speech_endpoint(speech_request: SpeechRequest, db: Session = 
         system_prompt = f"You are speaking to {speech_request.first_name}"
         if speech_request.user_profile:
             system_prompt += f", whose motivational profile is:\n{speech_request.user_profile}\n"
-        system_prompt += f"\nYou are a motivational coach with the following profile:\n{speech_request.persona}:{speech_request.tone}\n."
+        system_prompt += f"\nYou are a motivational coach with the following profile:\n{speech_request.persona}:{speech_request.tone}\n\nYou reply only in plain text.\nDon't use markdown."
         prompt = f"\nPlease write a motivational speech for {speech_request.first_name} in the {speech_request.persona} style and focus on using the correct triggers from {speech_request.first_name}'s profile to target the speech for just him/her."
 
         # Use Azure OpenAI to generate speech text
@@ -191,7 +191,7 @@ async def generate_public_speech_endpoint(speech_request: SpeechRequest, db: Ses
         system_prompt = f"You are speaking to {speech_request.first_name}"
         if speech_request.user_profile:
             system_prompt += f", whose motivational profile is:\n{speech_request.user_profile}\n"
-        system_prompt += f"\nYou are a motivational coach with the following profile:\n{speech_request.persona}:{speech_request.tone}\n."
+        system_prompt += f"\nYou are a motivational coach with the following profile:\n{speech_request.persona}:{speech_request.tone}\n\nYou reply only in plain text.\nDon't use markdown."
         prompt = f"\nPlease write a motivational speech for {speech_request.first_name} in the {speech_request.persona} style and focus on using the correct triggers from {speech_request.first_name}'s profile to target the speech for just him/her."
 
         # Use Azure OpenAI to generate speech text
