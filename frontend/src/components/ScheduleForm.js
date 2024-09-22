@@ -6,7 +6,7 @@ function ScheduleForm({ schedule, setSchedule }) {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const [errors, setErrors] = useState({});
 
-  const hours = [...Array(24).keys()].map(h => h.toString().padStart(2, '0')  ':00');
+  const hours = [...Array(24).keys()].map(h => h.toString().padStart(2, '0') + ':00');
 
   const getTimeForDay = (day) => {
     const scheduleEntry = schedule.find(s => s.day_of_week === day);
@@ -19,6 +19,7 @@ function ScheduleForm({ schedule, setSchedule }) {
       newSchedule.push({ day_of_week: day, time_of_day: time });
     }
     setSchedule(newSchedule);
+    // Clear error for the day if any
     setErrors(prevErrors => ({ ...prevErrors, [day]: '' }));
   };
 

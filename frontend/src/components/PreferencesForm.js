@@ -37,6 +37,7 @@ function PreferencesForm() {
           tone: userResponse.data.preferences?.tone || '',
           voice: userResponse.data.preferences?.voice || '',
         });
+
         // Fetch schedule
         const scheduleResponse = await API.get('/schedule/');
         const scheduleData = scheduleResponse.data.map(s => ({
@@ -49,6 +50,7 @@ function PreferencesForm() {
         setError('Failed to load user information and schedule.');
       }
     };
+
     fetchUserAndSchedule();
   }, []);
     
