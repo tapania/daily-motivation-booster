@@ -1,15 +1,56 @@
-// src/components/LandingPage.js
+// frontend/src/components/LandingPage.js
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import PublicSpeeches from './PublicSpeeches';
+import slide1 from '../assets/images/slide1.jpg';
+import slide2 from '../assets/images/slide2.jpg';
+import slide3 from '../assets/images/slide3.jpg';
+import slide4 from '../assets/images/slide4.jpg';
 
 function LandingPage() {
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen w-full text-black px-4 py-8">
+    <div className="flex flex-col items-center justify-start min-h-screen w-full text-black dark:text-white px-4 py-8 bg-white dark:bg-gray-900">
       {/* Logo and Tagline */}
       <div className="text-center mb-8">
         <h1 className="text-5xl font-bold mb-4">AlgorithmSpeaks</h1>
         <p className="text-2xl italic">Boost Your Ambitions with a Digital Push!</p>
+      </div>
+
+      {/* Slide Images Carousel */}
+      <div className="carousel w-full max-w-4xl mb-8">
+        <div id="slide1" className="carousel-item relative w-full">
+          <img src={slide1} className="w-full" alt="Introduction" />
+        </div>
+        <div id="slide2" className="carousel-item relative w-full">
+          <img src={slide2} className="w-full" alt="Personal Motivation" />
+        </div>
+        <div id="slide3" className="carousel-item relative w-full">
+          <img src={slide3} className="w-full" alt="Key Features" />
+        </div>
+        <div id="slide4" className="carousel-item relative w-full">
+          <img src={slide4} className="w-full" alt="Join Us" />
+        </div>
+      </div>
+
+      {/* Navigation Buttons for Carousel */}
+      <div className="flex justify-center w-full py-2 gap-2 mb-8">
+        <a href="#slide1" className="btn btn-xs">1</a>
+        <a href="#slide2" className="btn btn-xs">2</a>
+        <a href="#slide3" className="btn btn-xs">3</a>
+        <a href="#slide4" className="btn btn-xs">4</a>
+      </div>
+
+      {/* Disclaimer Section */}
+      <div className="alert alert-warning shadow-lg max-w-3xl mb-8 bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-200">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6 text-yellow-700 dark:text-yellow-200" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01"></path>
+          </svg>
+          <span>
+            <strong>Privacy Notice:</strong> Please do not include any personal or sensitive information in your profile. Instead, provide general directions or goals to help us tailor your motivational experience.
+          </span>
+        </div>
       </div>
 
       {/* Description */}
@@ -43,7 +84,7 @@ function LandingPage() {
       </div>
 
       {/* Disclaimers */}
-      <div className="max-w-3xl text-center text-sm italic text-gray-800">
+      <div className="max-w-3xl text-center text-sm italic text-gray-800 dark:text-gray-200">
         <p>
           🚧 Please note: This is a Hackathon project and some features might still be in development. We're working hard to bring you the best experience, but things might not be 100% polished just yet.
         </p>
@@ -53,7 +94,7 @@ function LandingPage() {
       </div>
 
       {/* Spacer */}
-      <div className="w-full border-t border-gray-300 my-12"></div>
+      <div className="w-full border-t border-gray-300 dark:border-gray-700 my-12"></div>
 
       {/* Public Speeches Showcase */}
       <div className="w-full">
