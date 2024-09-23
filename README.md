@@ -1,6 +1,6 @@
-# Daily Motivation Booster
+# AlgorithmSpeaks
 
-Welcome to the game! This guide will help you set up the project on a fresh Ubuntu installation. Follow the steps below to get the application up and running.
+Welcome to AlgorithmSpeaks! This guide will help you set up and run the project on a fresh Ubuntu installation. Follow the steps below to get the application up and running.
 
 ---
 
@@ -13,10 +13,11 @@ Welcome to the game! This guide will help you set up the project on a fresh Ubun
   - [2. Backend Setup](#2-backend-setup)
   - [3. Frontend Setup](#3-frontend-setup)
 - [Obtaining API Keys and Credentials](#obtaining-api-keys-and-credentials)
-  - [Azure OpenAI API Key](#azure-openai-api-key)
-  - [Azure Speech Service Key](#azure-speech-service-key)
-  - [Microsoft App Registration](#microsoft-app-registration)
-  - [Email SMTP Credentials](#email-smtp-credentials)
+  - [Azure Active Directory Application Registration](#azure-active-directory-application-registration)
+  - [Azure OpenAI Service](#azure-openai-service)
+  - [Azure Cognitive Services (Speech)](#azure-cognitive-services-speech)
+  - [Azure Blob Storage](#azure-blob-storage)
+  - [Azure Communication Services (Email)](#azure-communication-services-email)
 - [Configuring Environment Variables](#configuring-environment-variables)
   - [Backend `.env` Configuration](#backend-env-configuration)
   - [Frontend `.env` Configuration](#frontend-env-configuration)
@@ -33,12 +34,13 @@ Welcome to the game! This guide will help you set up the project on a fresh Ubun
 
 ## Introduction
 
-This web app generates personalized motivational speeches using GPT-4 through Azure OpenAI API and converts them to audio using Azure Text-to-Speech services. Users can:
+AlgorithmSpeaks is a web application that generates personalized motivational speeches using GPT-4 through Azure OpenAI API and converts them to audio using Azure Text-to-Speech services. Users can:
 
-- Log in using their Microsoft account.
+- Log in using their Microsoft account via Azure AD.
 - Set preferences and schedule for receiving speeches.
 - Choose from various personas and tones.
 - Receive speeches via email.
+- Generate and view public motivational speeches.
 
 ---
 
@@ -64,8 +66,6 @@ Open your terminal and run:
 git clone https://github.com/tapania/daily-motivation-booster.git
 cd daily-motivation-booster
 ```
-
----
 
 ### 2. Backend Setup
 
@@ -99,8 +99,6 @@ cp .env.example .env
 
 You'll need to fill in the required environment variables in the `.env` file. See [Configuring Environment Variables](#configuring-environment-variables) for details.
 
----
-
 ### 3. Frontend Setup
 
 #### a. Navigate to the Frontend Directory
@@ -131,27 +129,72 @@ Fill in the required environment variables in the `.env` file.
 
 ## Obtaining API Keys and Credentials
 
-### Azure OpenAI API Key
+To run AlgorithmSpeaks, you'll need to set up various Azure services and obtain the necessary API keys and credentials.
 
-1. **Create an Azure Account:**
+### Azure Active Directory Application Registration
 
-   - Sign up at [Azure Portal](https://portal.azure.com/).
+AlgorithmSpeaks uses Azure Active Directory (Azure AD) for user authentication via Microsoft accounts.
 
-2. **Apply for Access to Azure OpenAI:**
+1. **Register an Application in Azure AD:**
 
-   - Visit [Azure OpenAI Service](https://azure.microsoft.com/en-us/services/cognitive-services/openai-service/) and apply for access.
+   - Sign in to the [Azure Portal](https://portal.azure.com/).
+   - Navigate to **Azure Active Directory** > **App registrations**.
+   - Click on **New registration**.
 
-3. **Create an Azure OpenAI Resource:**
+2. **Fill in the App Details:**
+
+   - **Name:** Enter a name for your app, e.g., `AlgorithmSpeaks`.
+   - **Supported account types:** Select **Accounts in any organizational directory and personal Microsoft accounts**.
+   - **Redirect URI:** Enter `http://localhost:8000/callback`.
+
+3. **Register the Application:**
+
+   - Click **Register**.
+   - After registration, you'll be redirected to the application's overview page.
+
+4. **Get the Client ID and Tenant ID:**
+
+   - Copy the **Application (client) ID** and **Directory (tenant) ID**; you'll need these for your backend `.env` file.
+
+5. **Create a Client Secret:**
+
+   - Navigate to **Certificates & secrets**.
+   - Click **New client secret**.
+   - Add a description and choose an expiration period.
+   - Click **Add** and copy the **Value** (client secret); you'll need this for your backend `.env` file.
+
+6. **Configure API Permissions:**
+
+   - Navigate to **API Permissions**.
+   - Ensure that the application has **Microsoft Graph API** permissions for `User.Read`.
+
+### Azure OpenAI Service
+
+AlgorithmSpeaks uses Azure OpenAI for generating speech text.
+
+1. **Apply for Access to Azure OpenAI Service:**
+
+   - Visit the [Azure OpenAI Service](https://azure.microsoft.com/en-us/services/cognitive-services/openai-service/) page and apply for access.
+
+2. **Create an Azure OpenAI Resource:**
 
    - Once approved, create a new Azure OpenAI resource in your Azure portal.
 
-4. **Get the API Key and Endpoint:**
+3. **Get the API Key and Endpoint:**
 
-   - Navigate to the resource.
+   - Navigate to the Azure OpenAI resource.
    - Go to **Keys and Endpoint**.
-   - Copy the **Key** and **Endpoint URL**.
+   - Copy the **Key** and **Endpoint URL**; you'll need these for your backend `.env` file.
 
-### Azure Speech Service Key
+4. **Deploy a Model:**
+
+   - Navigate to **Model deployments**.
+   - Deploy the desired model (e.g., `gpt-4` or `gpt-35-turbo`).
+   - Note the **Deployment Name**; you'll need this for your backend `.env` file.
+
+### Azure Cognitive Services (Speech)
+
+AlgorithmSpeaks uses Azure Cognitive Services for text-to-speech conversion.
 
 1. **Create an Azure Speech Service Resource:**
 
@@ -161,51 +204,49 @@ Fill in the required environment variables in the `.env` file.
 
    - Navigate to the Speech resource.
    - Go to **Keys and Endpoint**.
-   - Copy the **Key** and note the **Region**.
+   - Copy the **Key** and note the **Region**; you'll need these for your backend `.env` file.
 
-### Microsoft App Registration
+### Azure Blob Storage
 
-1. **Register an Application in Azure AD:**
+AlgorithmSpeaks uses Azure Blob Storage to store and serve audio files.
 
-   - Go to [Azure Active Directory](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview).
-   - Select **App registrations** > **New registration**.
+1. **Create a Storage Account:**
 
-2. **Fill in the App Details:**
+   - In the Azure portal, create a new **Storage Account**.
 
-   - **Name:** Your app name.
-   - **Supported account types:** Choose according to your needs.
-   - **Redirect URI:** Use `http://localhost:8000/token` for development.
+2. **Create a Container:**
 
-3. **Get the Client ID and Tenant ID:**
+   - Navigate to your Storage Account.
+   - Go to **Blob Service** > **Containers**.
+   - Create a new container (e.g., `speeches`).
 
-   - After registration, copy the **Application (client) ID** and **Directory (tenant) ID**.
+3. **Generate a SAS Token:**
 
-4. **Create a Client Secret:**
+   - Navigate to the container.
+   - Click on **Generate SAS**.
+   - Configure the SAS token with appropriate permissions (e.g., Read, Write).
+   - Set an appropriate expiration date.
+   - Generate the SAS token and copy the **Container SAS URL**; you'll need this for your backend `.env` file.
 
-   - Go to **Certificates & secrets**.
-   - Click **New client secret** and copy the value.
+### Azure Communication Services (Email)
 
-### Email SMTP Credentials
+AlgorithmSpeaks uses Azure Communication Services to send emails.
 
-You need SMTP credentials to send emails. You can use providers like SendGrid, Gmail, etc.
+1. **Create an Azure Communication Services Resource:**
 
-**Example with SendGrid:**
+   - In the Azure portal, create a new **Communication Services** resource.
 
-1. **Create a SendGrid Account:**
+2. **Get the Connection String:**
 
-   - Sign up at [SendGrid](https://sendgrid.com/).
+   - Navigate to the Communication Services resource.
+   - Go to **Keys**.
+   - Copy the **Connection String**; you'll need this for your backend `.env` file.
 
-2. **Generate an API Key:**
+3. **Set Up a Verified Sender Email Address:**
 
-   - Go to **Settings** > **API Keys**.
-   - Create a new API Key with **Full Access**.
-
-3. **SMTP Settings:**
-
-   - **SMTP Host:** `smtp.sendgrid.net`
-   - **SMTP Port:** `587`
-   - **Username:** `apikey`
-   - **Password:** Your SendGrid API Key.
+   - Navigate to **Email** > **Senders**.
+   - Add and verify a sender email address.
+   - You'll need this email address for your backend `.env` file.
 
 ---
 
@@ -213,42 +254,45 @@ You need SMTP credentials to send emails. You can use providers like SendGrid, G
 
 ### Backend `.env` Configuration
 
-Edit the `backend/.env` file and fill in the following:
+Create a `.env` file in the `backend` directory and fill in the following variables:
 
 ```env
 # Azure AD Configuration
 CLIENT_ID=your_microsoft_client_id
 CLIENT_SECRET=your_microsoft_client_secret
-REDIRECT_URI=http://localhost:8000/token
+REDIRECT_URI=http://localhost:8000/callback
 AUTHORITY=https://login.microsoftonline.com/common
 SCOPE=User.Read
 
 # Azure OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
+AZURE_OPENAI_API_KEY=your_azure_openai_api_key
+AZURE_OPENAI_ENDPOINT=your_azure_openai_endpoint
+AZURE_OPENAI_DEPLOYMENT=your_azure_openai_deployment_name
 
 # Azure Speech Service Configuration
-SPEECH_KEY=your_speech_service_key
-SPEECH_REGION=your_speech_service_region
+AZURE_SPEECH_SUBSCRIPTION_KEY=your_azure_speech_service_key
+AZURE_SPEECH_REGION=your_azure_speech_service_region
 
-# Email Configuration
-EMAIL_HOST=smtp.sendgrid.net
-EMAIL_PORT=587
-EMAIL_HOST_USER=apikey
-EMAIL_HOST_PASSWORD=your_sendgrid_api_key
+# Azure Blob Storage Configuration
+AZURE_CONTAINER_SAS_URL=your_azure_container_sas_url
+
+# Azure Communication Services Configuration
+AZURE_COMMUNICATION_CONNECTION_STRING=your_communication_services_connection_string
+SENDER_EMAIL_ADDRESS=your_verified_sender_email_address
 
 # Application Configuration
-ALLOWED_ORIGINS=http://localhost:3000
 SECRET_KEY=your_secret_key
-DATABASE_URL=sqlite:///./motivational_app.db
+DATABASE_URL=sqlite:///./app.db
+FRONTEND_URL=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000
+COOKIE_SECURE=False
 ```
 
 ### Frontend `.env` Configuration
 
-Edit the `frontend/.env` file and fill in:
+Create a `.env` file in the `frontend` directory and fill in the following variables:
 
 ```env
-REACT_APP_CLIENT_ID=your_microsoft_client_id
-REACT_APP_REDIRECT_URI=http://localhost:3000/
 REACT_APP_BACKEND_URL=http://localhost:8000
 ```
 
@@ -301,14 +345,14 @@ REACT_APP_BACKEND_URL=http://localhost:8000
 
 ## Setting Up the Scheduler
 
-The scheduler script (`scheduler.py`) needs to run hourly to generate and send speeches.
+The scheduler script (`scheduler.py`) needs to run hourly to generate and send speeches based on user schedules.
 
 ### Using Cron to Schedule the Script
 
 1. **Ensure the Scheduler Script is Executable:**
 
    ```bash
-   chmod +x backend/scheduler.py
+   chmod +x scheduler.py
    ```
 
 2. **Edit the Crontab:**
@@ -322,10 +366,10 @@ The scheduler script (`scheduler.py`) needs to run hourly to generate and send s
    Add the following line to run the scheduler every hour:
 
    ```cron
-   0 * * * * cd /path/to/motivational-app/backend && /path/to/motivational-app/backend/venv/bin/python scheduler.py >> logs/cron.log 2>&1
+   0 * * * * cd /path/to/daily-motivation-booster/backend && /usr/bin/env bash -c 'source venv/bin/activate && python scheduler.py' >> logs/cron.log 2>&1
    ```
 
-   Replace `/path/to/motivational-app` with the actual path.
+   Replace `/path/to/daily-motivation-booster` with the actual path to your project directory.
 
 4. **Check Cron Logs:**
 
@@ -340,7 +384,7 @@ The scheduler script (`scheduler.py`) needs to run hourly to generate and send s
 - **Store secrets securely, preferably using environment variables or a secrets manager.**
 - **Regularly update dependencies to patch security vulnerabilities.**
 - **Implement proper error handling to prevent information leakage.**
-- **Ensure your SMTP credentials are kept secure.**
+- **Ensure your Azure keys and connection strings are kept secure.**
 
 ---
 
@@ -362,7 +406,7 @@ The scheduler script (`scheduler.py`) needs to run hourly to generate and send s
 
 - **Email Deliverability:**
 
-  - Ensure your email provider is configured correctly to prevent emails from being marked as spam.
+  - Ensure your email provider (Azure Communication Services) is configured correctly to prevent emails from being marked as spam.
   - Consider setting up SPF, DKIM, and DMARC records for your domain.
 
 - **Time Zones:**
@@ -379,6 +423,11 @@ The scheduler script (`scheduler.py`) needs to run hourly to generate and send s
 
   - The application includes comprehensive error handling.
   - Errors are logged without exposing sensitive information to the user.
+
+- **CORS Configuration:**
+
+  - The backend uses CORS middleware to allow requests from the frontend.
+  - Update `ALLOWED_ORIGINS` in the backend `.env` file if you change the frontend URL.
 
 ---
 
